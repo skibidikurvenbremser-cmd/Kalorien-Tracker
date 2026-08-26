@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Nährwerk</title>
+<meta name="theme-color" content="#14161A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nährwerk">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14161A;
+  --panel:#1D2026;
+  --panel-2:#23272E;
+  --rule:#31363F;
+  --ink:#E8E9EC;
+  --muted:#878E99;
+  --paper:#F3F1EC;
+  --paper-ink:#101215;
+  --kcal:#C8D2DC;
+  --protein:#5EC8E5;
+  --sugar:#E8B33A;
+  --fat:#C98BE0;
+  --carb:#8FD48A;
+  --over:#F2604C;
+  --pad:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink)}
+body{
+  font-family:'Archivo',system-ui,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- Kopf ---------- */
+header{
+  padding:calc(env(safe-area-inset-top) + 14px) var(--pad) 10px;
+  display:flex;align-items:baseline;justify-content:space-between;
+  border-bottom:1px solid var(--rule);
+  position:sticky;top:0;background:var(--bg);z-index:20;
+}
+.wordmark{font-weight:800;letter-spacing:-.02em;font-size:19px}
+.wordmark span{color:var(--muted);font-weight:500}
+.datum{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+main{padding:var(--pad);max-width:640px;margin:0 auto}
+.view{display:none}
+.view.on{display:block;animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+h2.eyebrow{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin:26px 0 10px;
+  display:flex;align-items:center;gap:10px;
+}
+h2.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+/* ---------- Messgeräte ---------- */
+.gauge{margin-bottom:18px}
+.gauge-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.gauge-name{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.gauge-val{font-size:14px}
+.gauge-val b{font-size:20px;font-weight:600;letter-spacing:-.01em}
+.gauge-val i{font-style:normal;color:var(--muted)}
+.track{
+  position:relative;height:12px;background:var(--panel-2);
+  border-radius:2px;overflow:hidden;
+}
+.track::after{
+  content:"";position:absolute;inset:0;
+  background-image:repeating-linear-gradient(90deg,transparent 0 24.5px,rgba(255,255,255,.13) 24.5px 25px);
+  pointer-events:none;
+}
+.fill{height:100%;width:0;border-radius:2px;transition:width .45s cubic-bezier(.2,.7,.3,1)}
+.fill.over{background:var(--over)!important}
+.gauge-sub{font-size:12px;color:var(--muted);margin-top:5px}
+
+.hero{
+  background:var(--panel);border:1px solid var(--rule);border-radius:10px;
+  padding:18px var(--pad) 14px;margin-bottom:6px;
+}
+.hero .big{font-size:44px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.hero .big em{font-style:normal;font-size:15px;color:var(--muted);font-weight:400;margin-left:6px}
+.hero .goal{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:10px}
+
+/* ---------- Etiketten (Einträge) ---------- */
+.label-card{
+  background:var(--paper);color:var(--paper-ink);
+  border-radius:4px;padding:10px 12px;margin-bottom:8px;
+  position:relative;
+}
+.label-card .lname{font-weight:700;font-size:14px;letter-spacing:-.01em;padding-right:26px}
+.label-card .lmeta{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#5C6470;margin-top:1px}
+.label-row{
+  display:flex;gap:0;margin-top:8px;border-top:2px solid var(--paper-ink);padding-top:6px;
+}
+.label-row div{flex:1;border-right:1px solid #C9C6BE;padding-right:6px}
+.label-row div:last-child{border-right:0}
+.label-row b{display:block;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
+.label-row span{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5C6470}
+.del{
+  position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:4px;
+  color:#8A9099;font-size:17px;line-height:1;display:grid;place-items:center;
+}
+.del:hover{background:#E0DDD5;color:#000}
+
+.empty{
+  border:1px dashed var(--rule);border-radius:10px;padding:22px;text-align:center;
+  color:var(--muted);font-size:14px;
+}
+
+/* ---------- Knöpfe & Felder ---------- */
+.btn{
+  display:block;width:100%;padding:14px;border-radius:8px;background:var(--ink);color:#101215;
+  font-weight:700;letter-spacing:-.01em;font-size:15px;text-align:center;
+}
+.btn.ghost{background:transparent;border:1px solid var(--rule);color:var(--ink);font-weight:600}
+.btn.small{padding:9px 12px;font-size:13px;width:auto;display:inline-block}
+.btn:active{transform:scale(.985)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px}
+input,select{
+  width:100%;padding:12px;border-radius:8px;border:1px solid var(--rule);
+  background:var(--panel);color:var(--ink);
+}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--protein);outline-offset:2px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{
+  flex:1;min-width:70px;padding:10px 8px;border-radius:8px;border:1px solid var(--rule);
+  background:var(--panel);font-size:13px;font-weight:600;color:var(--muted);
+}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#101215;border-color:var(--ink)}
+
+/* ---------- Scanner ---------- */
+#scanwrap{display:none;margin-bottom:14px;position:relative;border-radius:10px;overflow:hidden;background:#000}
+#scanwrap.on{display:block}
+video{width:100%;display:block;max-height:56vh;object-fit:cover}
+.reticle{
+  position:absolute;left:12%;right:12%;top:34%;height:32%;
+  border:2px solid rgba(255,255,255,.85);border-radius:6px;
+  box-shadow:0 0 0 2000px rgba(0,0,0,.42);
+}
+.reticle::after{
+  content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--over);
+}
+.scanhint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:12px;color:#fff;letter-spacing:.08em;text-transform:uppercase}
+
+.result{
+  background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:12px;
+}
+.hit{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:11px 0;border-bottom:1px solid var(--rule);text-align:left;width:100%;
+}
+.hit:last-child{border-bottom:0}
+.hit .hname{font-weight:600;font-size:14px;display:block}
+.hit .hmeta{font-size:12px;color:var(--muted);display:block}
+.hit .hkcal{font-size:13px;color:var(--kcal);white-space:nowrap}
+.hitmain{flex:1;text-align:left;min-width:0;padding:0}
+.del-v{
+  width:30px;height:30px;border-radius:6px;flex:none;
+  color:var(--muted);font-size:19px;line-height:1;display:grid;place-items:center;
+  border:1px solid var(--rule);
+}
+.del-v:hover{color:var(--over);border-color:var(--over)}
+
+/* ---------- Woche ---------- */
+.bars{display:flex;gap:6px;align-items:flex-end;height:150px;margin:4px 0 8px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:5px}
+.bar .stem{width:100%;background:var(--panel-2);border-radius:3px 3px 0 0;position:relative;transition:height .4s ease}
+.bar .stem.good{background:var(--carb)}
+.bar .stem.over{background:var(--over)}
+.bar .stem.under{background:var(--protein)}
+.bar .day{font-size:10px;text-align:center;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.targetline{position:relative;height:1px;background:var(--muted);opacity:.5;margin-bottom:-1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px}
+.stat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600}
+.stat span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- Kalender ---------- */
+.monatskopf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.monatskopf b{font-size:16px;font-weight:700;letter-spacing:-.01em;text-transform:capitalize}
+.monatskopf button{width:40px;height:40px;border:1px solid var(--rule);border-radius:8px;color:var(--ink);font-size:18px}
+.monatskopf button[disabled]{opacity:.3}
+.wochentage{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}
+.wochentage span{text-align:center;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .cell{
+  aspect-ratio:1/1;border-radius:6px;background:var(--panel);border:1px solid var(--rule);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;
+}
+.cal .cell.aus{background:none;border:0}
+.cal .cell .dnum{font-size:12px;font-weight:600}
+.cal .cell .dkcal{font-size:9px;color:var(--muted)}
+.cal .cell.leer .dnum{color:var(--muted);font-weight:400}
+.cal .cell.good{border-color:var(--carb)} .cal .cell.good .dkcal{color:var(--carb)}
+.cal .cell.over{border-color:var(--over)} .cal .cell.over .dkcal{color:var(--over)}
+.cal .cell.under{border-color:var(--protein)} .cal .cell.under .dkcal{color:var(--protein)}
+.cal .cell.jetzt{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.cal .cell[aria-pressed="true"]{background:var(--panel-2)}
+.close-x{
+  position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:6px;
+  color:var(--muted);font-size:20px;line-height:1;display:grid;place-items:center;
+  border:1px solid var(--rule);background:var(--bg);z-index:2;
+}
+.close-x:hover{color:var(--ink)}
+.result{position:relative}
+#tag-detail{margin-top:14px}
+
+/* ---------- Navigation ---------- */
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;background:rgba(20,22,26,.94);backdrop-filter:blur(12px);
+  border-top:1px solid var(--rule);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav button{
+  flex:1;padding:11px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--muted);
+}
+nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-current="true"]{color:var(--ink)}
+
+/* ---------- Onboarding ---------- */
+#setup{
+  position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;
+  padding:calc(env(safe-area-inset-top) + 32px) var(--pad) 40px;display:none;
+}
+#setup.on{display:block}
+#setup .intro{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:0 0 6px}
+#setup .lede{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:34em}
+.note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));
+  background:var(--ink);color:#101215;padding:10px 16px;border-radius:99px;font-weight:600;font-size:13px;
+  z-index:80;opacity:0;pointer-events:none;transition:opacity .2s
+}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ============ EINRICHTUNG ============ -->
+<div id="setup">
+  <p class="intro">Zuerst kurz<br>deine Eckdaten.</p>
+  <p class="lede">Daraus rechnet Nährwerk deinen Tagesverbrauch und deine Zielwerte. Alles bleibt auf diesem Gerät.</p>
+
+  <div class="row2">
+    <div class="field"><label for="s-alter">Alter</label><input id="s-alter" type="number" inputmode="numeric" placeholder="18"></div>
+    <div class="field"><label for="s-gewicht">Gewicht (kg)</label><input id="s-gewicht" type="number" inputmode="decimal" placeholder="70"></div>
+  </div>
+  <div class="field"><label for="s-groesse">Grösse (cm)</label><input id="s-groesse" type="number" inputmode="numeric" placeholder="178"></div>
+
+  <div class="field"><label>Geschlecht</label>
+    <div class="seg" id="s-sex">
+      <button type="button" data-v="m" aria-pressed="true">Männlich</button>
+      <button type="button" data-v="w" aria-pressed="false">Weiblich</button>
+    </div>
+  </div>
+
+  <div class="field"><label for="s-akt">Aktivität</label>
+    <select id="s-akt">
+      <option value="1.2">Sitzend, kaum Sport</option>
+      <option value="1.375">Leicht aktiv, 1–3× Training</option>
+      <option value="1.55" selected>Aktiv, 3–5× Training</option>
+      <option value="1.725">Sehr aktiv, 6–7× Training</option>
+    </select>
+  </div>
+
+  <div class="field"><label>Ziel</label>
+    <div class="seg" id="s-ziel">
+      <button type="button" data-v="cut" aria-pressed="true">Fett runter</button>
+      <button type="button" data-v="recomp" aria-pressed="false">Beides</button>
+      <button type="button" data-v="bulk" aria-pressed="false">Muskeln rauf</button>
+    </div>
+  </div>
+
+  <button class="btn" id="s-save" style="margin-top:18px">Zielwerte berechnen</button>
+  <p class="note">Die Werte sind Schätzungen aus einer Standardformel (Mifflin-St-Jeor). Wenn dein Gewicht sich nach 2–3 Wochen nicht so bewegt wie geplant, passt du die Kalorien um 100–200 an. Kein Ersatz für eine Ernährungsberatung.</p>
+</div>
+
+<header>
+  <div class="wordmark">Nährwerk<span>.</span></div>
+  <div class="datum" id="heute-datum"></div>
+</header>
+
+<main>
+
+<!-- ============ HEUTE ============ -->
+<section class="view on" id="v-heute">
+  <div class="hero">
+    <div class="goal" id="ziel-text">—</div>
+    <div class="big mono"><span id="kcal-rest">0</span><em>kcal übrig</em></div>
+    <div class="gauge" style="margin-top:14px;margin-bottom:0">
+      <div class="track"><div class="fill" id="f-kcal" style="background:var(--kcal)"></div></div>
+      <div class="gauge-sub"><span id="kcal-gegessen">0</span> von <span id="kcal-ziel">0</span> kcal gegessen</div>
+    </div>
+  </div>
+
+  <h2 class="eyebrow">Makros heute</h2>
+  <div class="gauge">
+    <div class="gauge-top"><div class="gauge-name">Protein</div><div class="gauge-val mono"><b id="p-ist">0</b><i> / <span id="p-ziel">0</span> g</i></div></div>
+    <div class="track"><div class="fill" id="f-p" style="background:var(--protein)"></div></div>
+  </div>
+  <div class="gauge">
+    <div class="gauge-top"><div class="gauge-name">Zucker · Limit</div><div class="gauge-val mono"><b id="z-ist">0</b><i> / <span id="z-ziel">0</span> g</i></div></div>
+    <div class="track"><div class="fill" id="f-z" style="background:var(--sugar)"></div></div>
+    <div class="gauge-sub" id="z-hint">&nbsp;</div>
+  </div>
+  <div class="gauge">
+    <div class="gauge-top"><div class="gauge-name">Kohlenhydrate</div><div class="gauge-val mono"><b id="k-ist">0</b><i> / <span id="k-ziel">0</span> g</i></div></div>
+    <div class="track"><div class="fill" id="f-k" style="background:var(--carb)"></div></div>
+  </div>
+  <div class="gauge">
+    <div class="gauge-top"><div class="gauge-name">Fett</div><div class="gauge-val mono"><b id="ft-ist">0</b><i> / <span id="ft-ziel">0</span> g</i></div></div>
+    <div class="track"><div class="fill" id="f-ft" style="background:var(--fat)"></div></div>
+  </div>
+
+  <h2 class="eyebrow">Gegessen</h2>
+  <div id="liste"></div>
+  <button class="btn ghost" id="btn-tag-reset" style="margin-top:12px">Heutigen Tag zurücksetzen</button>
+</section>
+
+<!-- ============ HINZUFÜGEN ============ -->
+<section class="view" id="v-add">
+  <h2 class="eyebrow" style="margin-top:6px">Produkt erfassen</h2>
+
+  <div class="row2">
+    <button class="btn" id="btn-scan">Barcode scannen</button>
+    <button class="btn ghost" id="btn-manuell">Selber eintippen</button>
+  </div>
+
+  <div id="scanwrap">
+    <video id="video" playsinline muted></video>
+    <div class="reticle"></div>
+    <div class="scanhint">Strichcode ins Feld halten</div>
+  </div>
+  <button class="btn ghost" id="btn-scan-stop" style="display:none;margin-bottom:12px">Scanner schliessen</button>
+
+  <div class="field">
+    <label for="q">Suchen oder Barcode eintippen</label>
+    <input id="q" type="search" placeholder="z.B. Skyr, Emmi Protein, 7610809...">
+  </div>
+  <button class="btn ghost" id="btn-suchen" style="margin-bottom:6px">Suchen</button>
+
+  <div id="such-status" class="note"></div>
+  <div id="treffer"></div>
+
+  <div id="portion" class="result" style="display:none"></div>
+
+  <div id="manuell" style="display:none">
+    <h2 class="eyebrow">Eigenes Produkt</h2>
+    <div class="field"><label for="m-name">Name</label><input id="m-name" placeholder="Znüni vom Beck"></div>
+    <div class="field"><label for="m-menge">Menge in Gramm</label><input id="m-menge" type="number" inputmode="decimal" placeholder="100"></div>
+    <p class="note" style="margin:0 0 10px">Nährwerte pro 100 g — steht auf der Packung.</p>
+    <div class="row2">
+      <div class="field"><label for="m-kcal">kcal</label><input id="m-kcal" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="m-p">Protein g</label><input id="m-p" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="m-k">Kohlenhydrate g</label><input id="m-k" type="number" inputmode="decimal"></div>
+      <div class="field"><label for="m-z">davon Zucker g</label><input id="m-z" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="field"><label for="m-f">Fett g</label><input id="m-f" type="number" inputmode="decimal"></div>
+    <button class="btn" id="m-save">Eintragen</button>
+    <button class="btn ghost" id="m-zu" style="margin-top:8px">Abbrechen</button>
+  </div>
+
+  <h2 class="eyebrow">Zuletzt gegessen</h2>
+  <div id="verlauf"></div>
+</section>
+
+<!-- ============ WOCHE ============ -->
+<section class="view" id="v-woche">
+  <h2 class="eyebrow" style="margin-top:6px">Kalorien, letzte 7 Tage</h2>
+  <div class="bars" id="wochenbars"></div>
+  <div class="note" id="wochen-legende"></div>
+  <div class="stats" id="wochenstats"></div>
+  <h2 class="eyebrow">Wie es läuft</h2>
+  <div class="result" id="wochen-fazit"></div>
+
+  <h2 class="eyebrow">Kalender</h2>
+  <div class="monatskopf">
+    <button id="monat-zurueck" aria-label="Monat zurück">&lsaquo;</button>
+    <b id="monat-titel">—</b>
+    <button id="monat-vor" aria-label="Monat vor">&rsaquo;</button>
+  </div>
+  <div class="wochentage"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+  <div class="cal" id="kalender"></div>
+  <div class="note" style="margin-top:10px">Tag antippen, um die Einträge zu sehen. Rahmenfarbe zeigt, wie der Tag gelaufen ist.</div>
+  <div class="result" id="tag-detail" style="display:none"></div>
+</section>
+
+<!-- ============ IDEEN ============ -->
+<section class="view" id="v-ideen">
+  <h2 class="eyebrow" style="margin-top:6px">Passt zu dem, was heute noch offen ist</h2>
+  <div class="note" id="rest-info"></div>
+  <div class="seg" id="tageszeit" style="margin:12px 0 16px">
+    <button type="button" data-v="alle" aria-pressed="true">Alle</button>
+    <button type="button" data-v="fruehstueck" aria-pressed="false">Morgen</button>
+    <button type="button" data-v="hauptmahlzeit" aria-pressed="false">Haupt</button>
+    <button type="button" data-v="snack" aria-pressed="false">Snack</button>
+  </div>
+  <div id="ideen"></div>
+</section>
+
+<!-- ============ PROFIL ============ -->
+<section class="view" id="v-profil">
+  <h2 class="eyebrow" style="margin-top:6px">Deine Zielwerte</h2>
+  <div class="result" id="profil-werte"></div>
+  <button class="btn ghost" id="btn-edit" style="margin-bottom:10px">Eckdaten ändern</button>
+  <button class="btn ghost" id="btn-export" style="margin-bottom:10px">Daten als Datei sichern</button>
+  <p class="note">Produktdaten kommen von Open Food Facts. Fehlt ein Produkt, trag es einmal von Hand ein — danach steht es unter „Zuletzt gegessen“ bereit.</p>
+</section>
+
+</main>
+
+<nav>
+  <button data-view="heute" aria-current="true"><svg viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg>Heute</button>
+  <button data-view="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Erfassen</button>
+  <button data-view="woche"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Woche</button>
+  <button data-view="ideen"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6v.6h5.6v-.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>Ideen</button>
+  <button data-view="profil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>Profil</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* =========================================================
+   1. Speicher
+   ========================================================= */
+const KEY = 'naehrwerk_v1';
+let db = { profil:null, eintraege:[], verlauf:[] };
+
+function laden(){
+  try{ const r = localStorage.getItem(KEY); if(r) db = Object.assign(db, JSON.parse(r)); }
+  catch(e){ console.warn('Speicher nicht lesbar', e); }
+}
+function sichern(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch(e){ toast('Speichern hat nicht geklappt'); }
+}
+const heute = () => new Date().toISOString().slice(0,10);
+const rund = n => Math.round(n||0);
+
+function toast(t){
+  const el = document.getElementById('toast');
+  el.textContent = t; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 2200);
+}
+
+/* =========================================================
+   2. Zielwerte rechnen
+   ========================================================= */
+function zieleRechnen(p){
+  // Grundumsatz nach Mifflin-St-Jeor
+  const bmr = 10*p.gewicht + 6.25*p.groesse - 5*p.alter + (p.sex==='m' ? 5 : -161);
+  const tdee = bmr * p.akt;
+
+  let kcal, proteinProKg, fettProKg, text;
+  if(p.ziel==='cut'){      kcal = tdee*0.80; proteinProKg = 2.0; fettProKg = 0.8; text = 'Körperfett runter'; }
+  else if(p.ziel==='bulk'){kcal = tdee*1.12; proteinProKg = 1.8; fettProKg = 1.0; text = 'Muskeln aufbauen'; }
+  else {                   kcal = tdee*1.00; proteinProKg = 2.2; fettProKg = 0.9; text = 'Fett runter, Muskeln rauf'; }
+
+  const protein = p.gewicht * proteinProKg;
+  const fett    = p.gewicht * fettProKg;
+  const kh      = Math.max(0, (kcal - protein*4 - fett*9) / 4);
+  const zucker  = kcal * 0.10 / 4;   // WHO: höchstens 10 % der Energie aus freiem Zucker
+
+  return { bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
+           fett:rund(fett), kh:rund(kh), zucker:rund(zucker), text };
+}
+
+/* =========================================================
+   3. Einrichtung
+   ========================================================= */
+function segBinden(id){
+  const box = document.getElementById(id);
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    [...box.children].forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    if(id==='tageszeit') ideenZeichnen();
+  });
+}
+const segWert = id => document.querySelector('#'+id+' [aria-pressed="true"]').dataset.v;
+
+['s-sex','s-ziel','tageszeit'].forEach(segBinden);
+
+document.getElementById('s-save').addEventListener('click', () => {
+  const p = {
+    alter:  +document.getElementById('s-alter').value,
+    gewicht:+document.getElementById('s-gewicht').value,
+    groesse:+document.getElementById('s-groesse').value,
+    akt:    +document.getElementById('s-akt').value,
+    sex:    segWert('s-sex'),
+    ziel:   segWert('s-ziel')
+  };
+  if(!(p.alter>0 && p.gewicht>0 && p.groesse>0)){ toast('Alter, Gewicht und Grösse fehlen noch'); return; }
+  p.ziele = zieleRechnen(p);
+  db.profil = p; sichern();
+  document.getElementById('setup').classList.remove('on');
+  allesZeichnen();
+});
+
+function setupOeffnen(){
+  const p = db.profil;
+  if(p){
+    document.getElementById('s-alter').value = p.alter;
+    document.getElementById('s-gewicht').value = p.gewicht;
+    document.getElementById('s-groesse').value = p.groesse;
+    document.getElementById('s-akt').value = p.akt;
+    [...document.getElementById('s-sex').children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===p.sex)));
+    [...document.getElementById('s-ziel').children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===p.ziel)));
+  }
+  document.getElementById('setup').classList.add('on');
+}
+
+/* =========================================================
+   4. Navigation
+   ========================================================= */
+document.querySelector('nav').addEventListener('click', e => {
+  const b = e.target.closest('button[data-view]'); if(!b) return;
+  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-current', String(x===b)));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById('v-'+b.dataset.view).classList.add('on');
+  window.scrollTo(0,0);
+  if(b.dataset.view==='woche') wocheZeichnen();
+  if(b.dataset.view==='ideen') ideenZeichnen();
+  if(b.dataset.view==='profil') profilZeichnen();
+  if(b.dataset.view!=='add') scannerStoppen();
+});
+function zuAnsicht(name){ document.querySelector('nav button[data-view="'+name+'"]').click(); }
+
+/* =========================================================
+   5. Heute
+   ========================================================= */
+function balken(id, ist, ziel){
+  const el = document.getElementById(id);
+  const q = ziel>0 ? ist/ziel : 0;
+  el.style.width = Math.min(100, q*100) + '%';
+  el.classList.toggle('over', q > 1.05);
+}
+
+function tagesSumme(datum){
+  return db.eintraege.filter(e=>e.datum===datum).reduce((s,e)=>({
+    kcal:s.kcal+e.kcal, protein:s.protein+e.protein, kh:s.kh+e.kh, zucker:s.zucker+e.zucker, fett:s.fett+e.fett
+  }), {kcal:0,protein:0,kh:0,zucker:0,fett:0});
+}
+
+function heuteZeichnen(){
+  const z = db.profil.ziele, s = tagesSumme(heute());
+
+  document.getElementById('ziel-text').textContent = z.text;
+  document.getElementById('kcal-rest').textContent = rund(z.kcal - s.kcal);
+  document.getElementById('kcal-gegessen').textContent = rund(s.kcal);
+  document.getElementById('kcal-ziel').textContent = z.kcal;
+  balken('f-kcal', s.kcal, z.kcal);
+
+  const setz = (a,b,ist,ziel,fid)=>{
+    document.getElementById(a).textContent = rund(ist);
+    document.getElementById(b).textContent = ziel;
+    balken(fid, ist, ziel);
+  };
+  setz('p-ist','p-ziel', s.protein, z.protein, 'f-p');
+  setz('z-ist','z-ziel', s.zucker, z.zucker, 'f-z');
+  setz('k-ist','k-ziel', s.kh, z.kh, 'f-k');
+  setz('ft-ist','ft-ziel', s.fett, z.fett, 'f-ft');
+
+  document.getElementById('z-hint').textContent =
+    s.zucker > z.zucker ? 'Über dem Limit — meistens sind Getränke und Süsses der Grund.' :
+    'Limit = 10 % deiner Kalorien, wie es die WHO empfiehlt.';
+
+  const liste = document.getElementById('liste');
+  const heutige = db.eintraege.filter(e=>e.datum===heute()).reverse();
+  liste.innerHTML = heutige.length ? heutige.map(etikett).join('')
+    : '<div class="empty">Heute noch nichts erfasst. Scan dein nächstes Produkt.</div>';
+
+  document.getElementById('heute-datum').textContent =
+    new Date().toLocaleDateString('de-CH',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+
+function etikett(e){
+  return '<div class="label-card">'
+    + '<button class="del" data-del="'+e.id+'" aria-label="Eintrag löschen">&times;</button>'
+    + '<div class="lname">'+esc(e.name)+'</div>'
+    + '<div class="lmeta">'+(e.marke?esc(e.marke)+' · ':'')+rund(e.menge)+' g</div>'
+    + '<div class="label-row">'
+    +   '<div><b>'+rund(e.kcal)+'</b><span>kcal</span></div>'
+    +   '<div><b>'+rund(e.protein)+'</b><span>Prot g</span></div>'
+    +   '<div><b>'+rund(e.zucker)+'</b><span>Zucker g</span></div>'
+    +   '<div><b>'+rund(e.kh)+'</b><span>KH g</span></div>'
+    +   '<div><b>'+rund(e.fett)+'</b><span>Fett g</span></div>'
+    + '</div></div>';
+}
+function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+document.getElementById('liste').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]'); if(!b) return;
+  db.eintraege = db.eintraege.filter(x => x.id !== b.dataset.del);
+  sichern(); heuteZeichnen(); toast('Gelöscht');
+});
+
+(function(){
+  const b = document.getElementById('btn-tag-reset');
+  let scharf = false, t = null;
+  b.addEventListener('click', ()=>{
+    const anzahl = db.eintraege.filter(e=>e.datum===heute()).length;
+    if(!anzahl){ toast('Heute ist schon leer'); return; }
+    if(!scharf){
+      scharf = true;
+      b.textContent = 'Sicher? Nochmal tippen ('+anzahl+' Einträge)';
+      b.style.borderColor = 'var(--over)';
+      b.style.color = 'var(--over)';
+      clearTimeout(t);
+      t = setTimeout(()=>{ scharf=false; b.textContent='Heutigen Tag zurücksetzen'; b.style.borderColor=''; b.style.color=''; }, 4000);
+      return;
+    }
+    clearTimeout(t); scharf = false;
+    b.textContent = 'Heutigen Tag zurücksetzen'; b.style.borderColor=''; b.style.color='';
+    db.eintraege = db.eintraege.filter(e => e.datum !== heute());
+    sichern(); heuteZeichnen(); toast('Tag zurückgesetzt');
+  });
+})();
+
+/* =========================================================
+   6. Eintragen
+   ========================================================= */
+function eintragen(prod, menge){
+  const f = menge/100;
+  const e = {
+    id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    datum: heute(), zeit: new Date().toISOString(),
+    name: prod.name, marke: prod.marke||'', menge: menge, pro100: prod.pro100,
+    kcal: prod.pro100.kcal*f, protein: prod.pro100.protein*f,
+    kh: prod.pro100.kh*f, zucker: prod.pro100.zucker*f, fett: prod.pro100.fett*f
+  };
+  db.eintraege.push(e);
+
+  db.verlauf = db.verlauf.filter(v => v.name !== prod.name);
+  db.verlauf.unshift({name:prod.name, marke:prod.marke||'', pro100:prod.pro100, menge:menge});
+  db.verlauf = db.verlauf.slice(0,25);
+
+  sichern(); heuteZeichnen(); verlaufZeichnen();
+  toast(rund(e.kcal)+' kcal eingetragen');
+}
+
+function portionZeigen(prod){
+  const box = document.getElementById('portion');
+  box.style.display = 'block';
+  box.innerHTML =
+    '<button class="close-x" id="p-zu" aria-label="Schliessen">&times;</button>'
+    + '<div style="font-weight:700;font-size:16px;letter-spacing:-.01em;padding-right:40px">'+esc(prod.name)+'</div>'
+    + '<div class="note" style="margin:2px 0 12px">'+(prod.marke?esc(prod.marke)+' · ':'')
+    + 'pro 100 g: '+rund(prod.pro100.kcal)+' kcal · '+rund(prod.pro100.protein)+' g Protein · '+rund(prod.pro100.zucker)+' g Zucker</div>'
+    + '<div class="field"><label for="pmenge">Wie viel isst du? (Gramm)</label>'
+    + '<input id="pmenge" type="number" inputmode="decimal" value="'+(prod.menge||100)+'"></div>'
+    + '<div class="seg" style="margin-bottom:12px">'
+    +   ['30','50','100','150','200','250'].map(g=>'<button type="button" class="pchip" data-g="'+g+'">'+g+' g</button>').join('')
+    + '</div>'
+    + '<button class="btn" id="p-ok">Eintragen</button>';
+
+  box.querySelectorAll('.pchip').forEach(b => b.addEventListener('click', ()=>{
+    document.getElementById('pmenge').value = b.dataset.g;
+  }));
+  document.getElementById('p-zu').addEventListener('click', ()=>{
+    box.style.display = 'none';
+    box.innerHTML = '';
+  });
+  document.getElementById('p-ok').addEventListener('click', ()=>{
+    const m = +document.getElementById('pmenge').value;
+    if(!(m>0)){ toast('Gramm eingeben'); return; }
+    eintragen(prod, m);
+    box.style.display='none';
+    document.getElementById('treffer').innerHTML='';
+    document.getElementById('q').value='';
+    zuAnsicht('heute');
+  });
+  box.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ---- Open Food Facts ---- */
+const OFF = 'https://world.openfoodfacts.org';
+function ausOFF(p){
+  const n = p.nutriments || {};
+  const kcal = n['energy-kcal_100g'] != null ? n['energy-kcal_100g']
+             : (n['energy_100g'] ? n['energy_100g']/4.184 : 0);
+  return {
+    name: p.product_name || 'Unbenanntes Produkt',
+    marke: (p.brands||'').split(',')[0].trim(),
+    pro100: {
+      kcal:+kcal||0, protein:+n.proteins_100g||0, kh:+n.carbohydrates_100g||0,
+      zucker:+n.sugars_100g||0, fett:+n.fat_100g||0
+    }
+  };
+}
+
+async function barcodeHolen(code){
+  const st = document.getElementById('such-status');
+  st.textContent = 'Suche Barcode '+code+' …';
+  try{
+    const r = await fetch(OFF+'/api/v2/product/'+encodeURIComponent(code)+'.json?fields=product_name,brands,nutriments');
+    const d = await r.json();
+    if(d.status === 1 && d.product){
+      const prod = ausOFF(d.product);
+      st.textContent = '';
+      if(!prod.pro100.kcal) st.textContent = 'Für dieses Produkt fehlen die Nährwerte in der Datenbank — trag sie unten von Hand ein.';
+      portionZeigen(prod);
+      scannerStoppen();
+    } else {
+      st.textContent = 'Dieser Barcode ist nicht in der Datenbank. Tipp die Werte von der Packung unten ein.';
+      manuellOeffnen();
+    }
+  }catch(err){
+    st.textContent = 'Keine Verbindung zur Produktdatenbank. Du kannst trotzdem von Hand eintragen.';
+  }
+}
+
+async function suchen(q){
+  const st = document.getElementById('such-status');
+  const tr = document.getElementById('treffer');
+  tr.innerHTML=''; st.textContent = 'Suche …';
+  try{
+    const url = OFF+'/cgi/search.pl?search_terms='+encodeURIComponent(q)
+              + '&search_simple=1&action=process&json=1&page_size=20'
+              + '&fields=product_name,brands,nutriments';
+    const r = await fetch(url);
+    const d = await r.json();
+    const treffer = (d.products||[]).map(ausOFF).filter(p => p.pro100.kcal > 0 && p.name !== 'Unbenanntes Produkt');
+    if(!treffer.length){ st.textContent = 'Nichts gefunden. Tipp das Produkt unten selber ein.'; return; }
+    st.textContent = treffer.length + ' Treffer';
+    tr.innerHTML = '<div class="result">' + treffer.map((p,i)=>
+      '<button class="hit" data-i="'+i+'"><span><span class="hname">'+esc(p.name)+'</span>'
+      + '<span class="hmeta">'+(p.marke?esc(p.marke):'ohne Marke')+'</span></span>'
+      + '<span class="hkcal mono">'+rund(p.pro100.kcal)+' kcal</span></button>').join('') + '</div>';
+    tr.querySelectorAll('.hit').forEach(b => b.addEventListener('click', ()=> portionZeigen(treffer[+b.dataset.i])));
+  }catch(err){
+    st.textContent = 'Die Suche ist nicht erreichbar. Von Hand eintragen geht aber.';
+  }
+}
+
+document.getElementById('btn-suchen').addEventListener('click', () => {
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  if(/^\d{8,14}$/.test(q)) barcodeHolen(q); else suchen(q);
+});
+document.getElementById('q').addEventListener('keydown', e => {
+  if(e.key==='Enter'){ e.preventDefault(); document.getElementById('btn-suchen').click(); }
+});
+
+/* ---- Scanner ---- */
+let stream=null, scanLoop=null, zxing=null;
+
+function skript(src){
+  return new Promise((ok,fail)=>{
+    const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=fail;
+    document.head.appendChild(s);
+  });
+}
+
+async function scannerStarten(){
+  const wrap = document.getElementById('scanwrap');
+  const video = document.getElementById('video');
+  const st = document.getElementById('such-status');
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+    video.srcObject = stream; await video.play();
+    wrap.classList.add('on');
+    document.getElementById('btn-scan-stop').style.display='block';
+
+    if('BarcodeDetector' in window){
+      const det = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});
+      const tick = async ()=>{
+        if(!stream) return;
+        try{
+          const codes = await det.detect(video);
+          if(codes.length){ navigator.vibrate && navigator.vibrate(60); barcodeHolen(codes[0].rawValue); return; }
+        }catch(e){}
+        scanLoop = requestAnimationFrame(tick);
+      };
+      tick();
+    } else {
+      st.textContent = 'Lade Scanner …';
+      await skript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
+      st.textContent = '';
+      zxing = new ZXing.BrowserMultiFormatReader();
+      zxing.decodeFromVideoDevice(null, 'video', (res, err) => {
+        if(res){ navigator.vibrate && navigator.vibrate(60); barcodeHolen(res.getText()); }
+      });
+    }
+  }catch(err){
+    st.textContent = 'Kamera nicht verfügbar. Die Seite muss über https laufen und die Kamera freigegeben sein. Barcode kannst du auch eintippen.';
+    scannerStoppen();
+  }
+}
+function scannerStoppen(){
+  if(scanLoop) cancelAnimationFrame(scanLoop), scanLoop=null;
+  if(zxing){ try{ zxing.reset(); }catch(e){} zxing=null; }
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  document.getElementById('scanwrap').classList.remove('on');
+  document.getElementById('btn-scan-stop').style.display='none';
+}
+document.getElementById('btn-scan').addEventListener('click', scannerStarten);
+document.getElementById('btn-scan-stop').addEventListener('click', scannerStoppen);
+
+/* ---- Von Hand ---- */
+function manuellOeffnen(){
+  const m = document.getElementById('manuell');
+  m.style.display='block';
+  m.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('btn-manuell').addEventListener('click', manuellOeffnen);
+document.getElementById('m-zu').addEventListener('click', ()=>{
+  document.getElementById('manuell').style.display='none';
+});
+document.getElementById('m-save').addEventListener('click', ()=>{
+  const name = document.getElementById('m-name').value.trim();
+  const menge = +document.getElementById('m-menge').value;
+  if(!name || !(menge>0)){ toast('Name und Menge fehlen'); return; }
+  const prod = { name, marke:'', pro100:{
+    kcal:+document.getElementById('m-kcal').value||0,
+    protein:+document.getElementById('m-p').value||0,
+    kh:+document.getElementById('m-k').value||0,
+    zucker:+document.getElementById('m-z').value||0,
+    fett:+document.getElementById('m-f').value||0
+  }};
+  eintragen(prod, menge);
+  ['m-name','m-menge','m-kcal','m-p','m-k','m-z','m-f'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('manuell').style.display='none';
+  zuAnsicht('heute');
+});
+
+/* ---- Verlauf ---- */
+function verlaufZeichnen(){
+  const el = document.getElementById('verlauf');
+  if(!db.verlauf.length){
+    el.innerHTML = '<div class="empty">Was du einmal erfasst hast, taucht hier zum Nachtippen auf.</div>';
+    return;
+  }
+  el.innerHTML = '<div class="result">' + db.verlauf.map((v,i)=>
+      '<div class="hit">'
+    +   '<button class="hitmain" data-v="'+i+'">'
+    +     '<span class="hname">'+esc(v.name)+'</span>'
+    +     '<span class="hmeta">'+(v.marke?esc(v.marke)+' · ':'')+'zuletzt '+rund(v.menge)+' g</span>'
+    +   '</button>'
+    +   '<span class="hkcal mono">'+rund(v.pro100.kcal*v.menge/100)+' kcal</span>'
+    +   '<button class="del-v" data-delv="'+i+'" aria-label="Aus der Liste entfernen">&times;</button>'
+    + '</div>').join('')
+    + '</div>'
+    + '<button class="btn ghost small" id="v-leeren" style="margin-top:10px">Liste leeren</button>';
+
+  el.querySelectorAll('[data-v]').forEach(b =>
+    b.addEventListener('click', ()=> portionZeigen(db.verlauf[+b.dataset.v])));
+
+  el.querySelectorAll('[data-delv]').forEach(b =>
+    b.addEventListener('click', ()=>{
+      db.verlauf.splice(+b.dataset.delv, 1);
+      sichern(); verlaufZeichnen(); toast('Aus der Liste entfernt');
+    }));
+
+  const leeren = document.getElementById('v-leeren');
+  let scharf = false, t = null;
+  leeren.addEventListener('click', ()=>{
+    if(!scharf){
+      scharf = true;
+      leeren.textContent = 'Sicher? Nochmal tippen';
+      leeren.style.borderColor = 'var(--over)'; leeren.style.color = 'var(--over)';
+      t = setTimeout(()=>{ scharf=false; leeren.textContent='Liste leeren'; leeren.style.borderColor=''; leeren.style.color=''; }, 4000);
+      return;
+    }
+    clearTimeout(t);
+    db.verlauf = [];
+    sichern(); verlaufZeichnen(); toast('Liste geleert');
+  });
+}
+
+/* =========================================================
+   7. Woche
+   ========================================================= */
+function letzteTage(n){
+  const out=[];
+  for(let i=n-1;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const iso = d.toISOString().slice(0,10);
+    out.push({iso, kurz:['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()], ...tagesSumme(iso)});
+  }
+  return out;
+}
+
+function wocheZeichnen(){
+  const z = db.profil.ziele, tage = letzteTage(7);
+  const max = Math.max(z.kcal*1.25, ...tage.map(t=>t.kcal), 1);
+
+  document.getElementById('wochenbars').innerHTML = tage.map(t=>{
+    const h = Math.max(2, t.kcal/max*100);
+    const kl = t.kcal===0 ? '' : (t.kcal > z.kcal*1.10 ? 'over' : (t.kcal < z.kcal*0.85 ? 'under' : 'good'));
+    return '<div class="bar"><div class="stem '+kl+'" style="height:'+h+'%"></div><div class="day">'+t.kurz+'</div></div>';
+  }).join('');
+
+  document.getElementById('wochen-legende').innerHTML =
+    'Grün = im Zielbereich · Blau = deutlich drunter · Rot = drüber. Zielwert: '+z.kcal+' kcal pro Tag.';
+
+  const erfasst = tage.filter(t=>t.kcal>0);
+  const mit = erfasst.length || 1;
+  const avg = k => rund(erfasst.reduce((s,t)=>s+t[k],0)/mit);
+
+  document.getElementById('wochenstats').innerHTML =
+      '<div class="stat"><b>'+avg('kcal')+'</b><span>Ø kcal / Tag</span></div>'
+    + '<div class="stat"><b>'+avg('protein')+'</b><span>Ø Protein g</span></div>'
+    + '<div class="stat"><b>'+avg('zucker')+'</b><span>Ø Zucker g</span></div>';
+
+  const imZiel = erfasst.filter(t=>t.kcal>=z.kcal*0.85 && t.kcal<=z.kcal*1.10).length;
+  const dP = avg('protein') - z.protein, dZ = avg('zucker') - z.zucker;
+  const zeilen = [];
+  zeilen.push('<b>'+imZiel+' von '+erfasst.length+'</b> erfassten Tagen lagen im Kalorien-Zielbereich.');
+  zeilen.push(dP >= -5 ? 'Protein sitzt — im Schnitt '+avg('protein')+' g pro Tag.'
+                       : 'Protein liegt '+rund(-dP)+' g unter Ziel. Das ist der Hebel für Muskelaufbau: Quark, Skyr, Poulet, Eier, Whey.');
+  zeilen.push(dZ > 0 ? 'Zucker liegt '+rund(dZ)+' g über deinem Limit. Schau zuerst bei Getränken und Süssem.'
+                     : 'Zucker im Rahmen, '+avg('zucker')+' g im Schnitt.');
+  if(erfasst.length < 4) zeilen.push('Erfass ein paar Tage mehr, dann wird der Schnitt aussagekräftig.');
+  document.getElementById('wochen-fazit').innerHTML = zeilen.map(t=>'<p style="margin:0 0 10px">'+t+'</p>').join('');
+  monatZeichnen();
+}
+
+/* ---- Monatskalender ---- */
+let monatOffset = 0;   // 0 = aktueller Monat
+let offenerTag = null;
+
+function isoVon(j,m,t){ return j+'-'+String(m+1).padStart(2,'0')+'-'+String(t).padStart(2,'0'); }
+
+function monatZeichnen(){
+  const z = db.profil.ziele;
+  const basis = new Date();
+  basis.setDate(1);
+  basis.setMonth(basis.getMonth() + monatOffset);
+  const jahr = basis.getFullYear(), monat = basis.getMonth();
+
+  document.getElementById('monat-titel').textContent =
+    basis.toLocaleDateString('de-CH', {month:'long', year:'numeric'});
+  document.getElementById('monat-vor').disabled = monatOffset >= 0;
+
+  const anzahlTage = new Date(jahr, monat+1, 0).getDate();
+  const start = (new Date(jahr, monat, 1).getDay() + 6) % 7;   // Montag zuerst
+
+  let html = '';
+  for(let i=0;i<start;i++) html += '<div class="cell aus"></div>';
+  for(let t=1;t<=anzahlTage;t++){
+    const iso = isoVon(jahr, monat, t);
+    const s = tagesSumme(iso);
+    const hat = s.kcal > 0;
+    const kl = !hat ? 'leer'
+      : (s.kcal > z.kcal*1.10 ? 'over' : (s.kcal < z.kcal*0.85 ? 'under' : 'good'));
+    html += '<button class="cell '+kl+(iso===heute()?' jetzt':'')+'" data-tag="'+iso+'"'
+          + ' aria-pressed="'+(iso===offenerTag)+'">'
+          + '<span class="dnum">'+t+'</span>'
+          + '<span class="dkcal mono">'+(hat ? rund(s.kcal) : '·')+'</span></button>';
+  }
+  const grid = document.getElementById('kalender');
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-tag]').forEach(b =>
+    b.addEventListener('click', () => tagDetail(b.dataset.tag)));
+}
+
+document.getElementById('monat-zurueck').addEventListener('click', ()=>{
+  monatOffset--; detailSchliessen(); monatZeichnen();
+});
+document.getElementById('monat-vor').addEventListener('click', ()=>{
+  if(monatOffset >= 0) return;
+  monatOffset++; detailSchliessen(); monatZeichnen();
+});
+
+function detailSchliessen(){
+  offenerTag = null;
+  const box = document.getElementById('tag-detail');
+  box.style.display = 'none';
+  box.innerHTML = '';
+  document.querySelectorAll('#kalender [data-tag]').forEach(b=>b.setAttribute('aria-pressed','false'));
+}
+
+function tagDetail(iso){
+  if(offenerTag === iso){ detailSchliessen(); return; }   // nochmal antippen = zu
+  offenerTag = iso;
+  document.querySelectorAll('#kalender [data-tag]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.tag === iso)));
+
+  const z = db.profil.ziele;
+  const s = tagesSumme(iso);
+  const eintraege = db.eintraege.filter(e => e.datum === iso);
+  const datum = new Date(iso+'T12:00:00').toLocaleDateString('de-CH',
+    {weekday:'long', day:'numeric', month:'long'});
+
+  const box = document.getElementById('tag-detail');
+  box.style.display = 'block';
+  box.innerHTML =
+      '<button class="close-x" data-zu aria-label="Schliessen">&times;</button>'
+    + '<div style="font-weight:700;font-size:16px;letter-spacing:-.01em;padding-right:40px">'+datum+'</div>'
+    + '<div class="note" style="margin:2px 0 12px">'+(eintraege.length ? eintraege.length+' Einträge' : 'Nichts erfasst')+'</div>'
+    + (eintraege.length
+        ? zeile('Kalorien', rund(s.kcal)+' / '+z.kcal+' kcal')
+        + zeile('Protein', rund(s.protein)+' / '+z.protein+' g')
+        + zeile('Zucker', rund(s.zucker)+' / '+z.zucker+' g')
+        + zeile('Kohlenhydrate', rund(s.kh)+' g')
+        + zeile('Fett', rund(s.fett)+' g')
+        + '<div style="margin-top:14px">'+eintraege.map(etikett).join('')+'</div>'
+        : '<div class="empty">An diesem Tag hast du nichts eingetragen.</div>');
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+document.getElementById('tag-detail').addEventListener('click', e => {
+  if(e.target.closest('[data-zu]')){ detailSchliessen(); return; }
+  const d = e.target.closest('[data-del]');
+  if(d){
+    db.eintraege = db.eintraege.filter(x => x.id !== d.dataset.del);
+    sichern(); heuteZeichnen(); monatZeichnen();
+    const tag = offenerTag; offenerTag = null; tagDetail(tag);
+    toast('Gelöscht');
+  }
+});
+
+/* =========================================================
+   8. Mahlzeiten-Ideen
+   ========================================================= */
+const MAHLZEITEN = [
+  {n:'Skyr mit Beeren und Haferflocken',       t:'fruehstueck',   kcal:380,p:32,k:48,z:14,f:6},
+  {n:'Porridge mit Whey und Banane',           t:'fruehstueck',   kcal:450,p:35,k:55,z:12,f:10},
+  {n:'Rührei aus 3 Eiern, Vollkorntoast',      t:'fruehstueck',   kcal:420,p:28,k:30,z:3, f:20},
+  {n:'Hüttenkäse, Vollkornbrot, Gurke',        t:'fruehstueck',   kcal:320,p:28,k:32,z:4, f:8},
+  {n:'Poulet-Reis-Bowl mit Broccoli',          t:'hauptmahlzeit', kcal:560,p:45,k:60,z:5, f:12},
+  {n:'Lachs, Süsskartoffeln, Spinat',          t:'hauptmahlzeit', kcal:620,p:42,k:45,z:9, f:28},
+  {n:'Vollkornpasta mit Poulet und Tomaten',   t:'hauptmahlzeit', kcal:650,p:48,k:80,z:12,f:14},
+  {n:'Thunfisch-Kichererbsen-Salat',           t:'hauptmahlzeit', kcal:400,p:38,k:30,z:6, f:12},
+  {n:'Rindsgeschnetzeltes mit Gemüse',         t:'hauptmahlzeit', kcal:520,p:50,k:20,z:8, f:25},
+  {n:'Linsencurry mit Reis',                   t:'hauptmahlzeit', kcal:540,p:24,k:85,z:10,f:10},
+  {n:'Poulet-Wrap mit Joghurtsauce',           t:'hauptmahlzeit', kcal:480,p:38,k:45,z:6, f:15},
+  {n:'Tofu-Reis-Pfanne mit Gemüse',            t:'hauptmahlzeit', kcal:480,p:28,k:60,z:7, f:14},
+  {n:'Kabeljau, Kartoffeln, Bohnen',           t:'hauptmahlzeit', kcal:450,p:42,k:45,z:5, f:8},
+  {n:'Grosser Poulet-Salat',                   t:'hauptmahlzeit', kcal:350,p:40,k:12,z:6, f:15},
+  {n:'Omelette mit Gemüse und Feta',           t:'hauptmahlzeit', kcal:380,p:26,k:8, z:5, f:27},
+  {n:'Magerquark, Banane, Erdnussbutter',      t:'snack',         kcal:420,p:40,k:35,z:20,f:12},
+  {n:'Proteinshake mit Milch',                 t:'snack',         kcal:250,p:30,k:20,z:18,f:5},
+  {n:'Griechischer Joghurt mit Nüssen',        t:'snack',         kcal:300,p:20,k:15,z:12,f:18},
+  {n:'Proteinriegel',                          t:'snack',         kcal:220,p:20,k:20,z:2, f:7},
+  {n:'Handvoll Mandeln',                       t:'snack',         kcal:180,p:6, k:6, z:1, f:15},
+  {n:'Rüebli und Hummus',                      t:'snack',         kcal:200,p:6, k:20,z:6, f:11},
+  {n:'Vollkornbrot mit Käse und Ei',           t:'snack',         kcal:400,p:24,k:35,z:4, f:18}
+];
+
+function ideenZeichnen(){
+  const z = db.profil.ziele, s = tagesSumme(heute());
+  const restK = z.kcal - s.kcal, restP = z.protein - s.protein, restZ = z.zucker - s.zucker;
+
+  document.getElementById('rest-info').innerHTML =
+    'Offen für heute: <b class="mono">'+rund(restK)+'</b> kcal, <b class="mono">'+rund(restP)
+    +'</b> g Protein, <b class="mono">'+rund(restZ)+'</b> g Zucker im Limit.';
+
+  const filter = segWert('tageszeit');
+  const kandidaten = MAHLZEITEN.filter(m => filter==='alle' || m.t===filter);
+
+  if(restK < 120){
+    document.getElementById('ideen').innerHTML =
+      '<div class="empty">Dein Tagesbudget ist praktisch voll. Wenn du noch Hunger hast, nimm etwas mit viel Protein und wenig Kalorien — Magerquark oder Hüttenkäse.</div>';
+    return;
+  }
+
+  const bewertet = kandidaten.map(m=>{
+    let s = 0;
+    s -= Math.abs(m.kcal - Math.min(restK, restK>900 ? 650 : restK)) / 12; // passt die Portionsgrösse?
+    s += Math.min(m.p, Math.max(restP,0)) * 1.4;                            // Protein bringt Punkte
+    if(m.kcal > restK) s -= (m.kcal - restK) / 4;                           // sprengt das Budget
+    if(m.z > Math.max(restZ,0)) s -= (m.z - Math.max(restZ,0)) * 2;          // sprengt das Zuckerlimit
+    return {m, s};
+  }).sort((a,b)=>b.s-a.s).slice(0,5);
+
+  document.getElementById('ideen').innerHTML = bewertet.map(({m},i)=>
+    '<div class="label-card">'
+    + '<div class="lname">'+esc(m.n)+'</div>'
+    + '<div class="lmeta">'+(m.kcal<=restK?'passt ins Budget':'etwas kleiner portionieren')+'</div>'
+    + '<div class="label-row">'
+    +   '<div><b>'+m.kcal+'</b><span>kcal</span></div>'
+    +   '<div><b>'+m.p+'</b><span>Prot g</span></div>'
+    +   '<div><b>'+m.z+'</b><span>Zucker g</span></div>'
+    +   '<div><b>'+m.k+'</b><span>KH g</span></div>'
+    +   '<div><b>'+m.f+'</b><span>Fett g</span></div>'
+    + '</div>'
+    + '<button class="btn small" data-idee="'+i+'" style="margin-top:10px;background:#101215;color:#F3F1EC">Als gegessen eintragen</button>'
+    + '</div>').join('');
+
+  document.getElementById('ideen').querySelectorAll('[data-idee]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const m = bewertet[+b.dataset.idee].m;
+      db.eintraege.push({
+        id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+        datum: heute(), zeit:new Date().toISOString(), name:m.n, marke:'Mahlzeit',
+        menge:1, pro100:{kcal:m.kcal,protein:m.p,kh:m.k,zucker:m.z,fett:m.f},
+        kcal:m.kcal, protein:m.p, kh:m.k, zucker:m.z, fett:m.f
+      });
+      sichern(); heuteZeichnen(); ideenZeichnen(); toast('Eingetragen');
+    });
+  });
+}
+
+/* =========================================================
+   9. Profil
+   ========================================================= */
+function profilZeichnen(){
+  const p = db.profil, z = p.ziele;
+  document.getElementById('profil-werte').innerHTML =
+      zeile('Ziel', z.text)
+    + zeile('Grundumsatz', z.bmr+' kcal')
+    + zeile('Tagesverbrauch', z.tdee+' kcal')
+    + zeile('Kalorien-Ziel', z.kcal+' kcal')
+    + zeile('Protein', z.protein+' g')
+    + zeile('Kohlenhydrate', z.kh+' g')
+    + zeile('Fett', z.fett+' g')
+    + zeile('Zucker-Limit', z.zucker+' g')
+    + zeile('Erfasste Einträge', db.eintraege.length);
+}
+function zeile(a,b){
+  return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--rule)">'
+    + '<span style="color:var(--muted);font-size:13px">'+a+'</span><span class="mono" style="font-size:14px">'+b+'</span></div>';
+}
+document.getElementById('btn-edit').addEventListener('click', setupOeffnen);
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'naehrwerk-'+heute()+'.json'; a.click();
+});
+/* =========================================================
+   10. Start
+   ========================================================= */
+function allesZeichnen(){ heuteZeichnen(); verlaufZeichnen(); }
+
+// Manifest ohne zweite Datei, damit "Zum Startbildschirm" funktioniert
+(function(){
+  const manifest = {
+    name:'Nährwerk', short_name:'Nährwerk', start_url:'.', display:'standalone',
+    background_color:'#14161A', theme_color:'#14161A',
+    icons:[{src:'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#14161A"/><text x="256" y="330" font-family="sans-serif" font-size="260" font-weight="800" fill="#F3F1EC" text-anchor="middle">N</text></svg>'),
+      sizes:'512x512', type:'image/svg+xml', purpose:'any'}]
+  };
+  const l = document.createElement('link');
+  l.rel = 'manifest';
+  l.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'}));
+  document.head.appendChild(l);
+})();
+
+laden();
+if(!db.profil) setupOeffnen(); else allesZeichnen();
+</script>
+</body>
+</html>
