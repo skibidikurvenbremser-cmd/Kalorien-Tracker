@@ -208,6 +208,8 @@ video{width:100%;display:block;max-height:56vh;object-fit:cover}
 .cal .cell.good{border-color:var(--carb)} .cal .cell.good .dkcal{color:var(--carb)}
 .cal .cell.over{border-color:var(--over)} .cal .cell.over .dkcal{color:var(--over)}
 .cal .cell.under{border-color:var(--protein)} .cal .cell.under .dkcal{color:var(--protein)}
+.cal .cell.teil{border-color:var(--sugar)} .cal .cell.teil .dkcal{color:var(--sugar)}
+.cal .cell.fehlt{border-color:var(--over)} .cal .cell.fehlt .dkcal{color:var(--over)}
 .cal .cell.jetzt{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .cal .cell[aria-pressed="true"]{background:var(--panel-2)}
 .close-x{
@@ -429,22 +431,24 @@ input[type=range]{
 <!-- ============ WOCHE ============ -->
 <section class="view" id="v-woche">
   <h2 class="eyebrow" style="margin-top:6px">Kalorien, letzte 7 Tage</h2>
+  <div id="wochen-leer"></div>
   <div class="bars" id="wochenbars"></div>
   <div class="note" id="wochen-legende"></div>
   <div class="stats" id="wochenstats"></div>
-  <h2 class="eyebrow">Wie es läuft</h2>
-  <div class="result" id="wochen-fazit"></div>
 
   <h2 class="eyebrow">Kalender</h2>
   <div class="monatskopf">
-    <button id="monat-zurueck" aria-label="Monat zurück">&lsaquo;</button>
-    <b id="monat-titel">—</b>
+    <button id="monat-zurueck" aria-label="Monat zur&uuml;ck">&lsaquo;</button>
+    <b id="monat-titel">&mdash;</b>
     <button id="monat-vor" aria-label="Monat vor">&rsaquo;</button>
   </div>
   <div class="wochentage"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
   <div class="cal" id="kalender"></div>
-  <div class="note" style="margin-top:10px">Tag antippen, um die Einträge zu sehen. Rahmenfarbe zeigt, wie der Tag gelaufen ist.</div>
+  <div class="note" style="margin-top:10px">Tag antippen, um die Eintr&auml;ge zu sehen. Rahmenfarbe zeigt, wie der Tag gelaufen ist.</div>
   <div class="result" id="tag-detail" style="display:none"></div>
+
+  <h2 class="eyebrow">Wie es l&auml;uft</h2>
+  <div class="result" id="wochen-fazit"></div>
 </section>
 
 <!-- ============ IDEEN ============ -->
@@ -473,6 +477,19 @@ input[type=range]{
   </div>
   <div id="uebungen" style="margin-top:16px"></div>
   <div class="note" id="plan-woche" style="margin-top:16px"></div>
+
+  <h2 class="eyebrow">Trainingskalender</h2>
+  <div class="monatskopf">
+    <button id="p-monat-zurueck" aria-label="Monat zur&uuml;ck">&lsaquo;</button>
+    <b id="p-monat-titel">&mdash;</b>
+    <button id="p-monat-vor" aria-label="Monat vor">&rsaquo;</button>
+  </div>
+  <div class="wochentage"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+  <div class="cal" id="plan-kalender"></div>
+  <div class="note" style="margin-top:10px">
+    Gr&uuml;n = alle Haken gesetzt &middot; Gelb = angefangen &middot; Rot = Trainingstag verpasst &middot; Grau = Ruhetag.
+    Tag antippen, um ihn nachzutragen.
+  </div>
 </section>
 
 <!-- ============ PROFIL ============ -->
@@ -1015,6 +1032,13 @@ function wocheZeichnen(){
   const z = db.profil.ziele, tage = letzteTage(7);
   const max = Math.max(z.kcal*1.25, ...tage.map(t=>t.kcal), 1);
 
+  const hatDaten = tage.some(t => t.kcal > 0);
+  document.getElementById('wochen-leer').innerHTML = hatDaten ? ''
+    : '<div class="empty">Noch keine Tage erfasst. Sobald du etwas eintr&auml;gst, siehst du hier den Verlauf.</div>';
+  document.getElementById('wochenbars').style.display   = hatDaten ? 'flex' : 'none';
+  document.getElementById('wochen-legende').style.display = hatDaten ? 'block' : 'none';
+  document.getElementById('wochenstats').style.display  = hatDaten ? 'grid' : 'none';
+
   document.getElementById('wochenbars').innerHTML = tage.map(t=>{
     const h = Math.max(2, t.kcal/max*100);
     const kl = t.kcal===0 ? '' : (t.kcal > z.kcal*1.10 ? 'over' : (t.kcal < z.kcal*0.85 ? 'under' : 'good'));
@@ -1033,15 +1057,20 @@ function wocheZeichnen(){
     + '<div class="stat"><b>'+avg('protein')+'</b><span>Ø Protein g</span></div>'
     + '<div class="stat"><b>'+avg('zucker')+'</b><span>Ø Zucker g</span></div>';
 
-  const imZiel = erfasst.filter(t=>t.kcal>=z.kcal*0.85 && t.kcal<=z.kcal*1.10).length;
-  const dP = avg('protein') - z.protein, dZ = avg('zucker') - z.zucker;
   const zeilen = [];
-  zeilen.push('<b>'+imZiel+' von '+erfasst.length+'</b> erfassten Tagen lagen im Kalorien-Zielbereich.');
-  zeilen.push(dP >= -5 ? 'Protein sitzt — im Schnitt '+avg('protein')+' g pro Tag.'
-                       : 'Protein liegt '+rund(-dP)+' g unter Ziel. Das ist der Hebel für Muskelaufbau: Quark, Skyr, Poulet, Eier, Whey.');
-  zeilen.push(dZ > 0 ? 'Zucker liegt '+rund(dZ)+' g über deinem Limit. Schau zuerst bei Getränken und Süssem.'
-                     : 'Zucker im Rahmen, '+avg('zucker')+' g im Schnitt.');
-  if(erfasst.length < 4) zeilen.push('Erfass ein paar Tage mehr, dann wird der Schnitt aussagekräftig.');
+  if(!erfasst.length){
+    zeilen.push('Sobald du ein paar Tage erfasst hast, steht hier, wie du im Schnitt liegst — '
+      + 'Kalorien, Protein und Zucker im Vergleich zu deinen Zielwerten.');
+  } else {
+    const imZiel = erfasst.filter(t=>t.kcal>=z.kcal*0.85 && t.kcal<=z.kcal*1.10).length;
+    const dP = avg('protein') - z.protein, dZ = avg('zucker') - z.zucker;
+    zeilen.push('<b>'+imZiel+' von '+erfasst.length+'</b> erfassten Tagen lagen im Kalorien-Zielbereich.');
+    zeilen.push(dP >= -5 ? 'Protein sitzt — im Schnitt '+avg('protein')+' g pro Tag.'
+                         : 'Protein liegt '+rund(-dP)+' g unter Ziel. Das ist der Hebel für Muskelaufbau: Quark, Skyr, Poulet, Eier, Whey.');
+    zeilen.push(dZ > 0 ? 'Zucker liegt '+rund(dZ)+' g über deinem Limit. Schau zuerst bei Getränken und Süssem.'
+                       : 'Zucker im Rahmen, '+avg('zucker')+' g im Schnitt.');
+    if(erfasst.length < 4) zeilen.push('Erfass ein paar Tage mehr, dann wird der Schnitt aussagekräftig.');
+  }
   document.getElementById('wochen-fazit').innerHTML = zeilen.map(t=>'<p style="margin:0 0 10px">'+t+'</p>').join('');
   monatZeichnen();
 }
@@ -1084,6 +1113,14 @@ function monatZeichnen(){
   grid.querySelectorAll('[data-tag]').forEach(b =>
     b.addEventListener('click', () => tagDetail(b.dataset.tag)));
 }
+
+document.getElementById('p-monat-zurueck').addEventListener('click', ()=>{
+  planMonat--; planKalender();
+});
+document.getElementById('p-monat-vor').addEventListener('click', ()=>{
+  if(planMonat >= 0) return;
+  planMonat++; planKalender();
+});
 
 document.getElementById('monat-zurueck').addEventListener('click', ()=>{
   monatOffset--; detailSchliessen(); monatZeichnen();
@@ -1319,6 +1356,7 @@ const PLAN = {
 const TAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 let planTag = null;        // ISO-Datum des angezeigten Tages
 let offeneUebung = null;   // aufgeklappte Übung
+let planMonat = 0;         // 0 = aktueller Monat im Trainingskalender
 
 function wochentagIndex(d){ return (d.getDay() + 6) % 7; }   // Mo = 0
 
@@ -1377,6 +1415,52 @@ function planZeichnen(){
   }
   document.getElementById('plan-woche').textContent =
     'Diese Woche: '+trainiert+' von '+moeglich+' Trainingstagen angefangen.';
+
+  planKalender();
+}
+
+function planKalender(){
+  const basis = new Date();
+  basis.setDate(1);
+  basis.setMonth(basis.getMonth() + planMonat);
+  const jahr = basis.getFullYear(), monat = basis.getMonth();
+
+  document.getElementById('p-monat-titel').textContent =
+    basis.toLocaleDateString('de-CH', {month:'long', year:'numeric'});
+  document.getElementById('p-monat-vor').disabled = planMonat >= 0;
+
+  const anzahlTage = new Date(jahr, monat+1, 0).getDate();
+  const start = (new Date(jahr, monat, 1).getDay() + 6) % 7;
+
+  let html = '';
+  for(let i=0;i<start;i++) html += '<div class="cell aus"></div>';
+  for(let t=1;t<=anzahlTage;t++){
+    const iso = isoVon(jahr, monat, t);
+    const soll = PLAN[new Date(iso+'T12:00:00').getDay()].uebungen.length;
+    const ist  = ((db.training||{})[iso] || []).length;
+    const vorbei = iso < heute();
+
+    let kl, text;
+    if(!soll){ kl = 'leer'; text = '&middot;'; }                       // Ruhetag
+    else if(ist >= soll){ kl = 'good'; text = ist+'/'+soll; }          // alles erledigt
+    else if(ist > 0){ kl = 'teil'; text = ist+'/'+soll; }              // angefangen
+    else if(vorbei){ kl = 'fehlt'; text = '0/'+soll; }                 // verpasst
+    else { kl = 'leer'; text = '0/'+soll; }                            // steht noch an
+
+    html += '<button class="cell '+kl+(iso===heute()?' jetzt':'')+'" data-ptag="'+iso+'"'
+          + ' aria-pressed="'+(iso===planTag)+'">'
+          + '<span class="dnum">'+t+'</span>'
+          + '<span class="dkcal mono">'+text+'</span></button>';
+  }
+  const grid = document.getElementById('plan-kalender');
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-ptag]').forEach(b =>
+    b.addEventListener('click', ()=>{
+      planTag = b.dataset.ptag;
+      offeneUebung = null;
+      planZeichnen();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }));
 }
 
 /* ---- Abhaken ---- */
