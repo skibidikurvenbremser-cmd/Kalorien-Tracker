@@ -128,8 +128,6 @@ h2.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
 .btn.small{padding:9px 12px;font-size:13px;width:auto;display:inline-block}
 .btn:active{transform:scale(.985)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.row3 .btn{padding:13px 4px;font-size:13.5px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px}
 input,select{
@@ -385,23 +383,9 @@ input[type=range]{
 <section class="view" id="v-add">
   <h2 class="eyebrow" style="margin-top:6px">Produkt erfassen</h2>
 
-  <div class="row3">
-    <button class="btn" id="btn-scan">Barcode</button>
-    <button class="btn ghost" id="btn-manuell">Eintippen</button>
-    <button class="btn ghost" id="btn-foto">Foto sch&auml;tzen</button>
-  </div>
-
-  <div id="foto" style="display:none">
-    <div class="result">
-      <button class="close-x" id="foto-zu" aria-label="Schliessen">&times;</button>
-      <div style="font-weight:700;font-size:16px;letter-spacing:-.01em;padding-right:40px">Selbstgekochtes sch&auml;tzen</div>
-      <p class="note" style="margin:2px 0 12px">Foto vom Teller machen, die KI sch&auml;tzt die N&auml;hrwerte. Bei &Ouml;l, Butter und Saucen liegt sie oft daneben &mdash; als Richtwert brauchbar, nicht als genaue Messung.</p>
-      <input type="file" accept="image/*" capture="environment" id="foto-datei" style="display:none">
-      <button class="btn ghost" id="foto-waehlen">Foto aufnehmen oder w&auml;hlen</button>
-      <img id="foto-vorschau" alt="" style="display:none;width:100%;border-radius:8px;margin-top:12px">
-      <button class="btn" id="foto-los" style="display:none;margin-top:12px">Sch&auml;tzen lassen</button>
-      <div class="note" id="foto-status" style="margin-top:10px"></div>
-    </div>
+  <div class="row2">
+    <button class="btn" id="btn-scan">Barcode scannen</button>
+    <button class="btn ghost" id="btn-manuell">Selber eintippen</button>
   </div>
 
   <div id="scanwrap">
@@ -513,22 +497,6 @@ input[type=range]{
   <h2 class="eyebrow" style="margin-top:6px">Deine Zielwerte</h2>
   <div class="result" id="profil-werte"></div>
   <button class="btn ghost" id="btn-edit" style="margin-bottom:10px">Eckdaten ändern</button>
-
-  <h2 class="eyebrow">Foto-Sch&auml;tzung</h2>
-  <div class="result">
-    <p class="note" style="margin:0 0 12px">Dein Schl&uuml;ssel bleibt nur auf diesem Ger&auml;t gespeichert und wird nie hochgeladen.</p>
-    <div class="field"><label for="ai-anbieter">Anbieter</label>
-      <select id="ai-anbieter">
-        <option value="gemini">Google Gemini (Gratis-Kontingent)</option>
-        <option value="claude">Anthropic Claude (kostet Guthaben)</option>
-      </select>
-    </div>
-    <div class="field"><label for="ai-modell">Modell</label>
-      <input id="ai-modell" placeholder="gemini-3.6-flash"></div>
-    <div class="field"><label for="ai-key">API-Schl&uuml;ssel</label>
-      <input id="ai-key" type="password" placeholder="AIza..."></div>
-    <button class="btn ghost" id="ai-save">Speichern</button>
-  </div>
   <button class="btn ghost" id="btn-export" style="margin-bottom:10px">Daten als Datei sichern</button>
   <p class="note">Produktdaten kommen von Open Food Facts. Fehlt ein Produkt, trag es einmal von Hand ein — danach steht es unter „Zuletzt gegessen“ bereit.</p>
 </section>
@@ -553,7 +521,7 @@ input[type=range]{
    1. Speicher
    ========================================================= */
 const KEY = 'naehrwerk_v1';
-let db = { profil:null, eintraege:[], verlauf:[], training:{}, gym:{}, ai:null };
+let db = { profil:null, eintraege:[], verlauf:[], training:{}, gym:{} };
 
 function laden(){
   try{ const r = localStorage.getItem(KEY); if(r) db = Object.assign(db, JSON.parse(r)); }
@@ -1046,152 +1014,6 @@ function verlaufZeichnen(){
     sichern(); verlaufZeichnen(); toast('Liste geleert');
   });
 }
-
-/* ---- Foto-Schaetzung ---- */
-let fotoBase64 = null;
-const MODELL_STANDARD = {gemini:'gemini-3.6-flash', claude:'claude-haiku-4-5-20251001'};
-
-document.getElementById('btn-foto').addEventListener('click', ()=>{
-  const box = document.getElementById('foto');
-  box.style.display = 'block';
-  document.getElementById('foto-status').innerHTML =
-    (db.ai && db.ai.key) ? ''
-    : 'Daf\u00fcr brauchst du einen API-Schl\u00fcssel. Den tr\u00e4gst du einmalig unter <b>Profil</b> ein.';
-  box.scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-document.getElementById('foto-zu').addEventListener('click', ()=>{
-  document.getElementById('foto').style.display = 'none';
-  document.getElementById('foto-vorschau').style.display = 'none';
-  document.getElementById('foto-los').style.display = 'none';
-  fotoBase64 = null;
-});
-
-document.getElementById('foto-waehlen').addEventListener('click', ()=>
-  document.getElementById('foto-datei').click());
-
-document.getElementById('foto-datei').addEventListener('change', e => {
-  const datei = e.target.files[0];
-  if(!datei) return;
-  const leser = new FileReader();
-  leser.onload = () => {
-    const bild = new Image();
-    bild.onload = () => {
-      const max = 900;
-      const f = Math.min(1, max/Math.max(bild.width, bild.height));
-      const c = document.createElement('canvas');
-      c.width  = Math.round(bild.width*f);
-      c.height = Math.round(bild.height*f);
-      c.getContext('2d').drawImage(bild, 0, 0, c.width, c.height);
-      const daten = c.toDataURL('image/jpeg', 0.75);
-      fotoBase64 = daten.split(',')[1];
-      const v = document.getElementById('foto-vorschau');
-      v.src = daten; v.style.display = 'block';
-      document.getElementById('foto-los').style.display = 'block';
-      document.getElementById('foto-status').textContent = '';
-    };
-    bild.src = leser.result;
-  };
-  leser.readAsDataURL(datei);
-});
-
-const FOTO_PROMPT = 'Du siehst ein Foto einer Mahlzeit. Sch\u00e4tze die N\u00e4hrwerte der abgebildeten '
-  + 'Portion so genau wie m\u00f6glich. Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Text davor '
-  + 'oder danach, ohne Markdown: {"name":"kurzer deutscher Name des Gerichts","menge_g":Zahl,'
-  + '"kcal":Zahl,"protein":Zahl,"kh":Zahl,"zucker":Zahl,"fett":Zahl,'
-  + '"sicherheit":"hoch oder mittel oder tief"}. menge_g ist das gesch\u00e4tzte Gesamtgewicht der '
-  + 'Portion, alle N\u00e4hrwerte gelten f\u00fcr diese ganze Portion, in Gramm. Ber\u00fccksichtige '
-  + 'sichtbares \u00d6l, Butter und Saucen. Erkennst du kein Essen, antworte {"fehler":"kein Essen"}.';
-
-async function fotoSchaetzen(){
-  const st = document.getElementById('foto-status');
-  const ai = db.ai || {};
-  if(!ai.key){ st.innerHTML = 'Kein API-Schl\u00fcssel hinterlegt \u2014 unter <b>Profil</b> eintragen.'; return; }
-  if(!fotoBase64){ st.textContent = 'Zuerst ein Foto ausw\u00e4hlen.'; return; }
-
-  st.textContent = 'Bild wird ausgewertet \u2026';
-  const modell = ai.modell || MODELL_STANDARD[ai.anbieter] || MODELL_STANDARD.gemini;
-
-  try{
-    let antwort;
-    if(ai.anbieter === 'claude'){
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{
-          'content-type':'application/json',
-          'x-api-key': ai.key,
-          'anthropic-version':'2023-06-01',
-          'anthropic-dangerous-direct-browser-access':'true'
-        },
-        body: JSON.stringify({
-          model: modell, max_tokens: 400,
-          messages:[{role:'user', content:[
-            {type:'image', source:{type:'base64', media_type:'image/jpeg', data: fotoBase64}},
-            {type:'text', text: FOTO_PROMPT}
-          ]}]
-        })
-      });
-      const d = await r.json();
-      if(d.error) throw new Error(d.error.message || 'Fehler von der API');
-      antwort = (d.content||[]).map(x => x.text || '').join('');
-    } else {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'
-        + encodeURIComponent(modell) + ':generateContent', {
-        method:'POST',
-        headers:{'content-type':'application/json', 'x-goog-api-key': ai.key},
-        body: JSON.stringify({
-          contents:[{parts:[
-            {text: FOTO_PROMPT},
-            {inline_data:{mime_type:'image/jpeg', data: fotoBase64}}
-          ]}]
-        })
-      });
-      const d = await r.json();
-      if(d.error) throw new Error(d.error.message || 'Fehler von der API');
-      antwort = ((((d.candidates||[])[0]||{}).content||{}).parts||[]).map(x => x.text || '').join('');
-    }
-
-    const roh = (antwort||'').replace(/```json|```/g, '').trim();
-    const j = JSON.parse(roh.slice(roh.indexOf('{'), roh.lastIndexOf('}')+1));
-    if(j.fehler){ st.textContent = 'Auf dem Bild wurde kein Essen erkannt.'; return; }
-
-    const menge = +j.menge_g || 100;
-    const prod = {
-      name: j.name || 'Gesch\u00e4tzte Mahlzeit',
-      marke: 'Foto-Sch\u00e4tzung' + (j.sicherheit ? ' \u00b7 Sicherheit ' + j.sicherheit : ''),
-      menge: menge,
-      pro100: {
-        kcal:    (+j.kcal||0)    /menge*100,
-        protein: (+j.protein||0) /menge*100,
-        kh:      (+j.kh||0)      /menge*100,
-        zucker:  (+j.zucker||0)  /menge*100,
-        fett:    (+j.fett||0)    /menge*100
-      }
-    };
-    st.innerHTML = 'Gesch\u00e4tzt: <b>'+esc(prod.name)+'</b>, '+rund(+j.kcal)+' kcal f\u00fcr '
-                 + rund(menge)+' g. Menge unten anpassen, falls die Portion anders war.';
-    portionZeigen(prod);
-  }catch(err){
-    st.textContent = 'Hat nicht geklappt: ' + (err.message || err)
-      + ' \u2014 pr\u00fcf Schl\u00fcssel und Modellnamen im Profil.';
-  }
-}
-document.getElementById('foto-los').addEventListener('click', fotoSchaetzen);
-
-document.getElementById('ai-anbieter').addEventListener('change', ()=>{
-  document.getElementById('ai-modell').placeholder =
-    MODELL_STANDARD[document.getElementById('ai-anbieter').value];
-});
-document.getElementById('ai-save').addEventListener('click', ()=>{
-  const anbieter = document.getElementById('ai-anbieter').value;
-  db.ai = {
-    anbieter: anbieter,
-    modell: document.getElementById('ai-modell').value.trim() || MODELL_STANDARD[anbieter],
-    key: document.getElementById('ai-key').value.trim()
-  };
-  sichern();
-  toast(db.ai.key ? 'Gespeichert' : 'Schl\u00fcssel gel\u00f6scht');
-});
 
 /* =========================================================
    7. Woche
@@ -1819,11 +1641,6 @@ function detailBinden(){
    ========================================================= */
 function profilZeichnen(){
   const p = db.profil, z = p.ziele;
-  const ai = db.ai || {};
-  document.getElementById('ai-anbieter').value = ai.anbieter || 'gemini';
-  document.getElementById('ai-modell').value   = ai.modell || '';
-  document.getElementById('ai-modell').placeholder = MODELL_STANDARD[ai.anbieter || 'gemini'];
-  document.getElementById('ai-key').value       = ai.key || '';
   document.getElementById('profil-werte').innerHTML =
       zeile('Ziel', z.text)
     + zeile('Grundumsatz', z.bmr+' kcal')
