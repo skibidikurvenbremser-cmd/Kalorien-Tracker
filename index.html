@@ -227,11 +227,52 @@ nav{
   padding-bottom:env(safe-area-inset-bottom);
 }
 nav button{
-  flex:1;padding:11px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
-  font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--muted);
+  flex:1;padding:11px 2px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--muted);
 }
-nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button[aria-current="true"]{color:var(--ink)}
+
+/* ---------- Trainingsplan ---------- */
+#tage button{min-width:0;padding:9px 4px;font-size:12px}
+.ueb-wrap{margin-bottom:8px}
+.ueb{
+  display:flex;align-items:stretch;width:100%;
+  background:var(--panel);border:1px solid var(--rule);border-radius:8px;
+}
+.ueb.offen{border-radius:8px 8px 0 0}
+.ueb.erledigt{border-color:var(--carb)}
+.ueb-check{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left;padding:12px 0 12px 13px}
+.ueb-more{
+  width:42px;flex:none;color:var(--muted);font-size:13px;
+  border-left:1px solid var(--rule);display:grid;place-items:center;
+}
+.ueb-more[aria-expanded="true"]{color:var(--ink);background:var(--panel-2)}
+.ueb .box{
+  width:22px;height:22px;flex:none;border-radius:5px;border:1.5px solid var(--rule);
+  display:grid;place-items:center;font-size:14px;color:transparent;
+}
+.ueb-check[aria-pressed="true"] .box{background:var(--carb);border-color:var(--carb);color:#101215}
+.ueb-check[aria-pressed="true"] .utext{color:var(--muted);text-decoration:line-through}
+.umeta{display:block;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.ueb-detail{
+  background:var(--panel-2);border:1px solid var(--rule);border-top:0;
+  border-radius:0 0 8px 8px;padding:14px;
+}
+.sl-zeile{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.sl-zeile span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sl-zeile b{font-size:17px;font-weight:600}
+input[type=range]{
+  width:100%;accent-color:var(--protein);background:none;border:0;
+  padding:0;margin:0 0 14px;height:28px;
+}
+.utext{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.upic{
+  width:66px;height:48px;flex:none;border-radius:6px;
+  background:var(--panel-2);display:grid;place-items:center;
+}
+.upic svg{width:62px;height:45px;display:block}
+.ueb[aria-pressed="true"] .upic{opacity:.45}
 
 /* ---------- Onboarding ---------- */
 #setup{
@@ -280,12 +321,14 @@ nav button[aria-current="true"]{color:var(--ink)}
     </select>
   </div>
 
-  <div class="field"><label>Ziel</label>
-    <div class="seg" id="s-ziel">
+  <div class="field"><label>Ziel &mdash; mehrere m&ouml;glich</label>
+    <div class="seg" id="s-ziel" data-multi="1">
       <button type="button" data-v="cut" aria-pressed="true">Fett runter</button>
-      <button type="button" data-v="recomp" aria-pressed="false">Beides</button>
       <button type="button" data-v="bulk" aria-pressed="false">Muskeln rauf</button>
+      <button type="button" data-v="leanw" aria-pressed="false">Lean werden</button>
+      <button type="button" data-v="lean" aria-pressed="false">Lean bleiben</button>
     </div>
+    <p class="note" style="margin:8px 0 0">Mehrere m&ouml;glich. &bdquo;Lean werden&ldquo; ist der Weg zur Definition: Defizit plus sehr viel Protein. &bdquo;Lean bleiben&ldquo; h&auml;lt sie, ohne abzunehmen.</p>
   </div>
 
   <button class="btn" id="s-save" style="margin-top:18px">Zielwerte berechnen</button>
@@ -417,6 +460,21 @@ nav button[aria-current="true"]{color:var(--ink)}
   <div id="ideen"></div>
 </section>
 
+<!-- ============ PLAN ============ -->
+<section class="view" id="v-plan">
+  <div class="seg" id="tage" style="margin:6px 0 16px"></div>
+  <div class="hero" style="margin-bottom:0">
+    <div class="goal" id="plan-datum">—</div>
+    <div style="font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15" id="plan-titel">—</div>
+    <div class="gauge" style="margin-top:14px;margin-bottom:0">
+      <div class="track"><div class="fill" id="f-plan" style="background:var(--carb)"></div></div>
+      <div class="gauge-sub" id="plan-fortschritt">&nbsp;</div>
+    </div>
+  </div>
+  <div id="uebungen" style="margin-top:16px"></div>
+  <div class="note" id="plan-woche" style="margin-top:16px"></div>
+</section>
+
 <!-- ============ PROFIL ============ -->
 <section class="view" id="v-profil">
   <h2 class="eyebrow" style="margin-top:6px">Deine Zielwerte</h2>
@@ -433,6 +491,7 @@ nav button[aria-current="true"]{color:var(--ink)}
   <button data-view="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Erfassen</button>
   <button data-view="woche"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Woche</button>
   <button data-view="ideen"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6v.6h5.6v-.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>Ideen</button>
+  <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11"/></svg>Plan</button>
   <button data-view="profil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>Profil</button>
 </nav>
 
@@ -445,11 +504,16 @@ nav button[aria-current="true"]{color:var(--ink)}
    1. Speicher
    ========================================================= */
 const KEY = 'naehrwerk_v1';
-let db = { profil:null, eintraege:[], verlauf:[] };
+let db = { profil:null, eintraege:[], verlauf:[], training:{}, gym:{} };
 
 function laden(){
   try{ const r = localStorage.getItem(KEY); if(r) db = Object.assign(db, JSON.parse(r)); }
   catch(e){ console.warn('Speicher nicht lesbar', e); }
+  // fr\u00fchere Profile hatten ein einzelnes Ziel als Text
+  if(db.profil && !Array.isArray(db.profil.ziel)){
+    db.profil.ziel = db.profil.ziel === 'recomp' ? ['cut','bulk'] : [db.profil.ziel];
+    db.profil.ziele = zieleRechnen(db.profil);
+  }
 }
 function sichern(){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }
@@ -472,18 +536,55 @@ function zieleRechnen(p){
   const bmr = 10*p.gewicht + 6.25*p.groesse - 5*p.alter + (p.sex==='m' ? 5 : -161);
   const tdee = bmr * p.akt;
 
-  let kcal, proteinProKg, fettProKg, text;
-  if(p.ziel==='cut'){      kcal = tdee*0.80; proteinProKg = 2.0; fettProKg = 0.8; text = 'Körperfett runter'; }
-  else if(p.ziel==='bulk'){kcal = tdee*1.12; proteinProKg = 1.8; fettProKg = 1.0; text = 'Muskeln aufbauen'; }
-  else {                   kcal = tdee*1.00; proteinProKg = 2.2; fettProKg = 0.9; text = 'Fett runter, Muskeln rauf'; }
+  const w = Array.isArray(p.ziel) ? p.ziel : [p.ziel];
+  const cut   = w.indexOf('cut')   > -1;   // Fett runter
+  const bulk  = w.indexOf('bulk')  > -1;   // Muskeln rauf
+  const leanW = w.indexOf('leanw') > -1;   // Lean werden
+  const leanB = w.indexOf('lean')  > -1;   // Lean bleiben
 
+  const abnehmen = cut || leanW;
+  const definiert = leanW || leanB;
+
+  // Tempo: 0.5-1 % K\u00f6rpergewicht pro Woche, je schlanker desto vorsichtiger
+  let faktor = 1.00, proteinProKg = 1.6, fettAnteil = 0.28;
+
+  if(abnehmen && bulk){                 // Rekomposition
+    faktor = 0.97; proteinProKg = 2.4; fettAnteil = 0.25;
+  } else if(abnehmen){                  // Defizit
+    faktor = leanW ? 0.82 : 0.80;
+    proteinProKg = leanW ? 2.4 : 2.2;
+    fettAnteil = 0.25;
+  } else if(bulk){                      // Aufbau
+    faktor = leanB ? 1.06 : 1.12; proteinProKg = 1.8; fettAnteil = 0.27;
+  } else if(leanB){                     // Definition halten
+    faktor = 1.00; proteinProKg = 2.0; fettAnteil = 0.25;
+  }
+
+  const kcal    = tdee * faktor;
   const protein = p.gewicht * proteinProKg;
-  const fett    = p.gewicht * fettProKg;
+  const fett    = Math.max(kcal*fettAnteil/9, p.gewicht*0.6);   // nie unter 0.6 g/kg
   const kh      = Math.max(0, (kcal - protein*4 - fett*9) / 4);
-  const zucker  = kcal * 0.10 / 4;   // WHO: höchstens 10 % der Energie aus freiem Zucker
+
+  // WHO: h\u00f6chstens 10 % der Energie aus freiem Zucker, ideal unter 5 %
+  const zuckerProzent = definiert ? 5 : 10;
+  const zucker = kcal * (zuckerProzent/100) / 4;
+
+  // Kontrollwerte
+  const khProKg = kh / p.gewicht;                       // Richtwert 2-5 g/kg an Trainingstagen
+  const tempo   = (tdee - kcal) * 7 / 7700;             // kg pro Woche
+  const tempoProzent = Math.abs(tempo) / p.gewicht * 100;
+
+  const namen = [];
+  if(cut)   namen.push('Fett runter');
+  if(bulk)  namen.push('Muskeln rauf');
+  if(leanW) namen.push('Lean werden');
+  if(leanB) namen.push('Lean bleiben');
+  const text = namen.length ? namen.join(' + ') : 'Gewicht halten';
 
   return { bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
-           fett:rund(fett), kh:rund(kh), zucker:rund(zucker), text };
+           fett:rund(fett), kh:rund(kh), zucker:rund(zucker), zuckerProzent,
+           khProKg: Math.round(khProKg*10)/10, tempo: Math.round(tempo*100)/100,
+           tempoProzent: Math.round(tempoProzent*10)/10, text };
 }
 
 /* =========================================================
@@ -491,13 +592,19 @@ function zieleRechnen(p){
    ========================================================= */
 function segBinden(id){
   const box = document.getElementById(id);
+  const mehrfach = box.dataset.multi === '1';
   box.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
-    [...box.children].forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    if(mehrfach){
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    } else {
+      [...box.children].forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    }
     if(id==='tageszeit') ideenZeichnen();
   });
 }
-const segWert = id => document.querySelector('#'+id+' [aria-pressed="true"]').dataset.v;
+const segWert  = id => document.querySelector('#'+id+' [aria-pressed="true"]').dataset.v;
+const segWerte = id => [...document.querySelectorAll('#'+id+' [aria-pressed="true"]')].map(b=>b.dataset.v);
 
 ['s-sex','s-ziel','tageszeit'].forEach(segBinden);
 
@@ -508,7 +615,7 @@ document.getElementById('s-save').addEventListener('click', () => {
     groesse:+document.getElementById('s-groesse').value,
     akt:    +document.getElementById('s-akt').value,
     sex:    segWert('s-sex'),
-    ziel:   segWert('s-ziel')
+    ziel:   segWerte('s-ziel')
   };
   if(!(p.alter>0 && p.gewicht>0 && p.groesse>0)){ toast('Alter, Gewicht und Grösse fehlen noch'); return; }
   p.ziele = zieleRechnen(p);
@@ -525,7 +632,9 @@ function setupOeffnen(){
     document.getElementById('s-groesse').value = p.groesse;
     document.getElementById('s-akt').value = p.akt;
     [...document.getElementById('s-sex').children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===p.sex)));
-    [...document.getElementById('s-ziel').children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===p.ziel)));
+    const gewaehlt = Array.isArray(p.ziel) ? p.ziel : [p.ziel];
+    [...document.getElementById('s-ziel').children].forEach(b=>
+      b.setAttribute('aria-pressed', String(gewaehlt.indexOf(b.dataset.v) > -1)));
   }
   document.getElementById('setup').classList.add('on');
 }
@@ -541,6 +650,7 @@ document.querySelector('nav').addEventListener('click', e => {
   window.scrollTo(0,0);
   if(b.dataset.view==='woche') wocheZeichnen();
   if(b.dataset.view==='ideen') ideenZeichnen();
+  if(b.dataset.view==='plan') planZeichnen();
   if(b.dataset.view==='profil') profilZeichnen();
   if(b.dataset.view!=='add') scannerStoppen();
 });
@@ -583,7 +693,7 @@ function heuteZeichnen(){
 
   document.getElementById('z-hint').textContent =
     s.zucker > z.zucker ? 'Über dem Limit — meistens sind Getränke und Süsses der Grund.' :
-    'Limit = 10 % deiner Kalorien, wie es die WHO empfiehlt.';
+    'Limit = '+(z.zuckerProzent||10)+' % deiner Kalorien'+(z.zuckerProzent===5 ? ' \u2014 der strengere WHO-Richtwert f\u00fcr Definition.' : ', wie es die WHO empfiehlt.');
 
   const liste = document.getElementById('liste');
   const heutige = db.eintraege.filter(e=>e.datum===heute()).reverse();
@@ -1114,7 +1224,336 @@ function ideenZeichnen(){
 }
 
 /* =========================================================
-   9. Profil
+   9. Trainingsplan
+   ========================================================= */
+/* ---- Zeichnungen ---- */
+function fig(inhalt){
+  return '<svg viewBox="0 0 100 72" fill="none" stroke="currentColor" stroke-width="3" '
+       + 'stroke-linecap="round" stroke-linejoin="round">' + inhalt + '</svg>';
+}
+const G = 'stroke="var(--rule)" stroke-width="2"';        // Boden, Wand, Gestell
+const E = 'stroke="var(--sugar)" stroke-width="3.5"';     // Gewichte, Geräte
+
+const BILD = {
+  'Bankdrücken': fig(
+    '<path '+G+' d="M12 66h76"/><path '+G+' d="M24 52h50M32 52v14M66 52v14"/>'
+    + '<circle cx="28" cy="45" r="5"/><path d="M33 47h27l8 4v10"/><path d="M40 46V33"/>'
+    + '<path '+E+' d="M26 31h30"/><circle '+E+' cx="24" cy="31" r="4"/><circle '+E+' cx="58" cy="31" r="4"/>'),
+
+  'Klimmzüge': fig(
+    '<path '+E+' d="M18 14h64"/><path d="M40 16v13M60 16v13"/>'
+    + '<circle cx="50" cy="30" r="5.5"/><path d="M40 29h20"/><path d="M50 35v18"/>'
+    + '<path d="M50 53l-7 8-2 6M50 53l7 8 2 6"/>'),
+
+  'Dips': fig(
+    '<path '+G+' d="M18 66h64M30 34v30M70 34v30"/><path '+E+' d="M26 34h48"/>'
+    + '<circle cx="54" cy="20" r="5"/><path d="M54 25v20"/><path d="M54 28L46 40 44 34"/>'
+    + '<path d="M54 45l8 7-4 8"/>'),
+
+  'Seitenheben': fig(
+    '<circle cx="50" cy="16" r="6"/><path d="M50 22v24"/><path d="M50 28L31 31M50 28l19 3"/>'
+    + '<path '+E+' d="M28 27v8M34 27v8M66 27v8M72 27v8"/>'
+    + '<path d="M50 46l-6 20M50 46l6 20"/>'),
+
+  'Pike-Push-ups': fig(
+    '<path '+G+' d="M12 66h76"/><path d="M26 64L36 46 52 26 66 46 76 64"/>'
+    + '<circle cx="28" cy="52" r="5"/>'),
+
+  'Curls': fig(
+    '<circle cx="50" cy="15" r="6"/><path d="M50 21v25"/>'
+    + '<path d="M50 26L40 38 44 26M50 26l10 12-4-12"/>'
+    + '<path '+E+' d="M41 22v8M47 22v8M53 22v8M59 22v8"/>'
+    + '<path d="M50 46l-6 20M50 46l6 20"/>'),
+
+  'Trizepsdrücken am Kabel': fig(
+    '<path '+G+' d="M78 16v50M62 66h24"/><circle '+E+' cx="78" cy="12" r="4"/>'
+    + '<path '+E+' d="M78 16v10l-14 8"/>'
+    + '<circle cx="46" cy="18" r="5.5"/><path d="M48 24v22"/><path d="M48 28l8 8 8-2"/>'
+    + '<path d="M48 46l-4 20M48 46l6 20"/>'),
+
+  'Wall Sits': fig(
+    '<path '+G+' d="M28 6v60M28 66h58"/>'
+    + '<circle cx="36" cy="20" r="5.5"/><path d="M34 26v18"/><path d="M34 44h26"/>'
+    + '<path d="M60 44v22"/><path d="M35 31l16 6"/>'),
+
+  'Backpack Rows': fig(
+    '<path '+G+' d="M12 66h76"/>'
+    + '<circle cx="26" cy="26" r="5"/><path d="M31 29l26 9"/><path d="M57 38l6 14-2 14"/>'
+    + '<path d="M34 31v12"/><rect '+E+' x="28" y="43" width="12" height="11" rx="2"/>'),
+
+  'Reverse Snow Angels': fig(
+    '<circle cx="50" cy="14" r="5"/><path d="M50 20v30"/>'
+    + '<path d="M50 26L30 18M50 26l20-8"/><path d="M50 50l-6 16M50 50l6 16"/>'
+    + '<path '+E+' stroke-dasharray="3 5" d="M30 18a24 24 0 0 0-6 22M70 18a24 24 0 0 1 6 22"/>'),
+
+  'Glute Bridges': fig(
+    '<path '+G+' d="M12 64h76"/>'
+    + '<circle cx="24" cy="56" r="5"/><path d="M29 59l24-16 14 3"/><path d="M67 46l4 18"/>'),
+
+  'Hollow Body Hold': fig(
+    '<path '+G+' d="M12 64h76"/>'
+    + '<circle cx="26" cy="44" r="5"/><path d="M31 47Q50 64 66 50"/>'
+    + '<path d="M66 50l14-10"/><path d="M31 47L18 39"/>'),
+
+  'Reverse Crunch': fig(
+    '<path '+G+' d="M12 64h76"/>'
+    + '<circle cx="22" cy="57" r="5"/><path d="M27 60h26"/><path d="M53 60l6-16-12-6"/>'),
+
+  'Normale Push-ups': fig(
+    '<path '+G+' d="M12 64h76"/>'
+    + '<circle cx="24" cy="44" r="5"/><path d="M30 47l28 5 22 12"/><path d="M30 47L25 55 28 64"/>')
+};
+
+const ROTATION = ['Bankdrücken','Klimmzüge','Dips','Seitenheben','Pike-Push-ups','Curls','Trizepsdrücken am Kabel'];
+
+const PLAN = {
+  1:{titel:'BZZ-Gym',          zusatz:'Stationen-Rotation', uebungen: ROTATION},
+  2:{titel:'Rücken + Gesäss',  zusatz:'zu Hause',           uebungen:['Backpack Rows','Reverse Snow Angels','Glute Bridges']},
+  3:{titel:'BZZ-Gym + Beine',  zusatz:'Rotation + Beine',   uebungen: ROTATION.concat(['Wall Sits'])},
+  4:{titel:'Bauch',            zusatz:'zu Hause',           uebungen:['Hollow Body Hold','Reverse Crunch']},
+  5:{titel:'Brust + Bauch',    zusatz:'zu Hause',           uebungen:['Normale Push-ups','Hollow Body Hold','Reverse Crunch']},
+  6:{titel:'Frei',             zusatz:'Ruhetag',            uebungen:[]},
+  0:{titel:'Frei',             zusatz:'Ruhetag',            uebungen:[]}
+};
+
+const TAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+let planTag = null;        // ISO-Datum des angezeigten Tages
+let offeneUebung = null;   // aufgeklappte Übung
+
+function wochentagIndex(d){ return (d.getDay() + 6) % 7; }   // Mo = 0
+
+function datumDerWoche(index){
+  const d = new Date();
+  d.setDate(d.getDate() - wochentagIndex(d) + index);
+  return d.toISOString().slice(0,10);
+}
+
+function planZeichnen(){
+  if(!planTag) planTag = heute();
+  const d = new Date(planTag + 'T12:00:00');
+  const tag = PLAN[d.getDay()];
+  const erledigt = (db.training && db.training[planTag]) || [];
+
+  document.getElementById('tage').innerHTML = TAGE.map((t,i)=>{
+    const iso = datumDerWoche(i);
+    return '<button type="button" data-tag="'+iso+'" aria-pressed="'+(iso===planTag)+'">'+t+'</button>';
+  }).join('');
+  document.querySelectorAll('#tage [data-tag]').forEach(b =>
+    b.addEventListener('click', ()=>{ planTag = b.dataset.tag; planZeichnen(); }));
+
+  document.getElementById('plan-datum').textContent =
+    (planTag===heute() ? 'Heute · ' : '') + d.toLocaleDateString('de-CH',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('plan-titel').textContent = tag.titel;
+
+  const gesamt = tag.uebungen.length;
+  const anteil = gesamt ? erledigt.length/gesamt : 0;
+  document.getElementById('f-plan').style.width = (anteil*100)+'%';
+  document.getElementById('plan-fortschritt').textContent =
+    gesamt ? erledigt.length+' von '+gesamt+' erledigt · '+tag.zusatz : tag.zusatz;
+
+  document.getElementById('uebungen').innerHTML = gesamt
+    ? tag.uebungen.map(u => uebungHtml(u, erledigt.indexOf(u) > -1)).join('')
+    : '<div class="empty">Ruhetag. Erholung ist Teil des Plans — da wachsen die Muskeln.</div>';
+
+  document.querySelectorAll('#uebungen [data-ueb]').forEach(b =>
+    b.addEventListener('click', ()=> abhaken(b.dataset.ueb)));
+
+  document.querySelectorAll('#uebungen [data-more]').forEach(b =>
+    b.addEventListener('click', ()=>{
+      offeneUebung = (offeneUebung === b.dataset.more) ? null : b.dataset.more;
+      planZeichnen();
+    }));
+
+  detailBinden();
+
+  // Wochenübersicht
+  let trainiert = 0, moeglich = 0;
+  for(let i=0;i<7;i++){
+    const iso = datumDerWoche(i);
+    const p = PLAN[new Date(iso+'T12:00:00').getDay()];
+    if(!p.uebungen.length) continue;
+    moeglich++;
+    if(((db.training||{})[iso]||[]).length) trainiert++;
+  }
+  document.getElementById('plan-woche').textContent =
+    'Diese Woche: '+trainiert+' von '+moeglich+' Trainingstagen angefangen.';
+}
+
+/* ---- Abhaken ---- */
+function abhaken(name){
+  if(!db.training) db.training = {};
+  const liste = db.training[planTag] || [];
+  const i = liste.indexOf(name);
+  const g = gymDaten(name);
+  const halten = HALTEN.indexOf(name) > -1;
+
+  if(i > -1){
+    // Haken weg: auch die heute automatisch \u00fcbernommenen S\u00e4tze wieder raus
+    liste.splice(i,1);
+    g.log = g.log.filter(l => l.d !== planTag);
+  } else {
+    liste.push(name);
+    const heuteSchon = g.log.some(l => l.d === planTag);
+    if(!heuteSchon && g.log.length){
+      // Werte vom letzten Mal \u00fcbernehmen, damit man nichts neu eintippen muss
+      g.log.push({d:planTag, kg:g.kg, wdh:g.wdh});
+      toast('Wie letztes Mal: ' + (g.kg ? g.kg+' kg \u00d7 ' : '') + g.wdh + (halten ? ' s' : ' Wdh'));
+    }
+  }
+  db.training[planTag] = liste;
+  sichern(); planZeichnen();
+}
+
+/* ---- Gewichte, Wiederholungen, Bestwerte ---- */
+const HALTEN  = ['Wall Sits','Hollow Body Hold'];
+const ZUSATZ = ['Klimmzüge','Dips'];                    // Zusatzgewicht möglich
+const OHNE_GEWICHT = ['Pike-Push-ups','Normale Push-ups','Reverse Crunch',
+                      'Reverse Snow Angels','Glute Bridges','Wall Sits','Hollow Body Hold'];
+
+function gymDaten(u){
+  if(!db.gym) db.gym = {};
+  if(!db.gym[u]) db.gym[u] = {kg:0, wdh: HALTEN.indexOf(u)>-1 ? 30 : 8, bestKg:0, bestWdh:0, log:[]};
+  return db.gym[u];
+}
+
+function uebungHtml(u, fertig){
+  const g = gymDaten(u);
+  const offen = offeneUebung === u;
+  const letzter = g.log[g.log.length-1];
+  const halten = HALTEN.indexOf(u) > -1;
+  const ohne   = OHNE_GEWICHT.indexOf(u) > -1;
+
+  const best = ohne
+    ? (g.bestWdh ? 'max ' + g.bestWdh + (halten ? ' s' : ' Wdh') : '')
+    : (g.bestKg  ? 'max ' + g.bestKg + ' kg' : '');
+  const teile = [];
+  if(letzter) teile.push(satzText(letzter, halten));
+  if(best) teile.push(best);
+  const meta = teile.length ? '<span class="umeta">' + teile.join('  &middot;  ') + '</span>' : '';
+
+  return '<div class="ueb-wrap">'
+    + '<div class="ueb'+(fertig?' erledigt':'')+(offen?' offen':'')+'">'
+    +   '<button class="ueb-check" data-ueb="'+esc(u)+'" aria-pressed="'+fertig+'">'
+    +     '<span class="box">&#10003;</span>'
+    +     '<span class="upic">'+(BILD[u]||'')+'</span>'
+    +     '<span><span class="utext">'+esc(u)+'</span>'+meta+'</span>'
+    +   '</button>'
+    +   '<button class="ueb-more" data-more="'+esc(u)+'" aria-expanded="'+offen+'" aria-label="Details">'
+    +     (offen ? '&#9650;' : '&#9660;') + '</button>'
+    + '</div>'
+    + (offen ? detailHtml(u) : '')
+    + '</div>';
+}
+
+function satzText(l, halten){
+  return (l.kg ? l.kg+' kg &times; ' : '') + l.wdh + (halten ? ' s' : ' Wdh')
+       + ' &middot; ' + l.d.slice(8,10) + '.' + l.d.slice(5,7) + '.';
+}
+
+function detailHtml(u){
+  const g = gymDaten(u);
+  const halten = HALTEN.indexOf(u) > -1;
+  const ohne   = OHNE_GEWICHT.indexOf(u) > -1;
+  const zusatz = ZUSATZ.indexOf(u) > -1;
+  const eh = halten ? ' s' : '';
+  const minW = halten ? 5 : 1;
+  const maxW = halten ? 180 : (ohne ? 60 : 30);
+  const stW  = halten ? 5 : 1;
+  const wort = halten ? 'Haltezeit' : 'Wiederholungen';
+  const maxWort = ohne ? ('Max ' + wort) : ('Max ' + (zusatz ? 'Zusatzgewicht' : 'Gewicht'));
+
+  let html = '<div class="ueb-detail">';
+
+  if(ohne){
+    // Nur Wiederholungen bzw. Sekunden — der Bestwert zählt in derselben Einheit
+    html += '<div class="sl-zeile"><span>'+maxWort+'</span>'
+          +   '<b class="mono" id="an-max">'+(g.bestWdh ? g.bestWdh+(halten?' s':' Wdh') : '&ndash;')+'</b></div>'
+          + '<input type="range" min="0" max="'+maxW+'" step="'+stW+'" value="'+g.bestWdh+'" id="sl-max">';
+  } else {
+    html += '<div class="sl-zeile"><span>'+maxWort+'</span>'
+          +   '<b class="mono" id="an-max">'+(g.bestKg ? g.bestKg+' kg' : '&ndash;')+'</b></div>'
+          + '<input type="range" min="0" max="200" step="2.5" value="'+g.bestKg+'" id="sl-max">'
+          + '<div class="sl-zeile"><span>'+(zusatz ? 'Zusatzgewicht' : 'Gewicht')+' heute</span>'
+          +   '<b class="mono" id="an-kg">'+g.kg+' kg</b></div>'
+          + '<input type="range" min="0" max="200" step="2.5" value="'+g.kg+'" id="sl-kg">';
+  }
+
+  const heutige = g.log.filter(l => l.d === planTag).length;
+  html += '<div class="sl-zeile"><span>'+wort+' heute</span>'
+        +   '<b class="mono" id="an-wdh">'+g.wdh+eh+'</b></div>'
+        + '<input type="range" min="'+minW+'" max="'+maxW+'" step="'+stW+'" value="'+g.wdh+'" id="sl-wdh">'
+        + '<button class="btn" id="satz-ok" style="padding:11px">'
+        +   (heutige ? 'Noch einen Satz eintragen' : 'Satz eintragen') + '</button>'
+        + '<div class="note" style="margin-top:12px">';
+
+  if(ohne){
+    html += (g.log.length ? g.log.length+' S&auml;tze eingetragen' : 'Noch nichts eingetragen')
+          + '<br>Reines K&ouml;rpergewicht &mdash; hier z&auml;hlt nur, wie '
+          + (halten ? 'lange du h&auml;ltst.' : 'oft du schaffst.');
+  } else {
+    html += (halten ? 'L&auml;ngster Halt' : 'Meiste Wiederholungen')
+          + ': <b class="mono">'+(g.bestWdh ? g.bestWdh+eh : '&ndash;')+'</b>'
+          + ' &middot; ' + (g.log.length ? g.log.length+' S&auml;tze eingetragen' : 'noch nichts eingetragen');
+  }
+  html += (heutige ? '<br><b>Heute: '+heutige+' Satz'+(heutige>1?'&auml;tze':'')+'</b>' : '')
+        + '<br>Die Schieber stehen auf deinen letzten Werten. Haken setzen &uuml;bernimmt sie einfach &mdash; '
+        + 'anfassen musst du sie nur, wenn sich etwas &auml;ndert.'
+        + '</div></div>';
+  return html;
+}
+
+function detailBinden(){
+  const u = offeneUebung;
+  if(!u) return;
+  const g = gymDaten(u);
+  const halten = HALTEN.indexOf(u) > -1;
+  const ohne   = OHNE_GEWICHT.indexOf(u) > -1;
+  const eh = halten ? ' s' : '';
+
+  const slMax = document.getElementById('sl-max');
+  const slKg  = document.getElementById('sl-kg');
+  const slW   = document.getElementById('sl-wdh');
+  if(!slMax || !slW) return;
+
+  slMax.addEventListener('input', ()=>{
+    const v = +slMax.value;
+    if(ohne) g.bestWdh = v; else g.bestKg = v;
+    document.getElementById('an-max').textContent =
+      v ? (ohne ? v + (halten ? ' s' : ' Wdh') : v + ' kg') : '–';
+  });
+  slMax.addEventListener('change', sichern);
+
+  if(slKg){
+    slKg.addEventListener('input', ()=>{
+      g.kg = +slKg.value;
+      document.getElementById('an-kg').textContent = g.kg+' kg';
+    });
+    slKg.addEventListener('change', sichern);
+  } else {
+    g.kg = 0;   // Körpergewichtsübung
+  }
+
+  slW.addEventListener('input', ()=>{
+    g.wdh = +slW.value;
+    document.getElementById('an-wdh').textContent = g.wdh + eh;
+  });
+  slW.addEventListener('change', sichern);
+
+  document.getElementById('satz-ok').addEventListener('click', ()=>{
+    g.log.push({d:planTag, kg:g.kg, wdh:g.wdh});
+    if(g.log.length > 60) g.log = g.log.slice(-60);
+    if(g.kg  > g.bestKg)  g.bestKg  = g.kg;
+    if(g.wdh > g.bestWdh) g.bestWdh = g.wdh;
+    if(!db.training) db.training = {};
+    const liste = db.training[planTag] || [];
+    if(liste.indexOf(u) === -1){ liste.push(u); db.training[planTag] = liste; }
+    sichern(); planZeichnen();
+    toast('Satz gespeichert');
+  });
+}
+
+/* =========================================================
+   10. Profil
    ========================================================= */
 function profilZeichnen(){
   const p = db.profil, z = p.ziele;
@@ -1124,10 +1563,17 @@ function profilZeichnen(){
     + zeile('Tagesverbrauch', z.tdee+' kcal')
     + zeile('Kalorien-Ziel', z.kcal+' kcal')
     + zeile('Protein', z.protein+' g')
-    + zeile('Kohlenhydrate', z.kh+' g')
+    + zeile('Kohlenhydrate', z.kh+' g  ('+z.khProKg+' g/kg)')
     + zeile('Fett', z.fett+' g')
-    + zeile('Zucker-Limit', z.zucker+' g')
-    + zeile('Erfasste Einträge', db.eintraege.length);
+    + zeile('Zucker-Limit', z.zucker+' g  ('+z.zuckerProzent+' %)')
+    + zeile('Tempo', z.tempo === 0 ? 'Gewicht halten'
+        : (z.tempo > 0 ? '≈ −' : '≈ +') + Math.abs(z.tempo).toFixed(2)
+          + ' kg/Woche  ('+z.tempoProzent+' %)')
+    + zeile('Erfasste Einträge', db.eintraege.length)
+    + '<p class="note" style="margin:14px 0 0">Kohlenhydrate sind der Rest, nachdem Protein und Fett stehen &mdash; '
+    + '2 bis 5 g pro kg sind der Richtwert, damit das Training läuft. '
+    + (z.khProKg < 2 ? '<b>Deine liegen darunter.</b> Falls das Gym zäh wird, iss etwas mehr davon und dafür weniger Fett. ' : '')
+    + 'Ein Tempo von 0.5 bis 1 % Körpergewicht pro Woche hält beim Abnehmen die Muskeln.</p>';
 }
 function zeile(a,b){
   return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--rule)">'
@@ -1140,7 +1586,7 @@ document.getElementById('btn-export').addEventListener('click', ()=>{
   a.href = URL.createObjectURL(blob); a.download = 'naehrwerk-'+heute()+'.json'; a.click();
 });
 /* =========================================================
-   10. Start
+   11. Start
    ========================================================= */
 function allesZeichnen(){ heuteZeichnen(); verlaufZeichnen(); }
 
