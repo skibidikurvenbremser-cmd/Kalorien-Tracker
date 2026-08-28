@@ -81,7 +81,8 @@ h2.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
   background-image:repeating-linear-gradient(90deg,transparent 0 24.5px,rgba(255,255,255,.13) 24.5px 25px);
   pointer-events:none;
 }
-.fill{height:100%;width:0;border-radius:2px;transition:width .45s cubic-bezier(.2,.7,.3,1)}
+.fill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:2px;
+  transition:width .45s cubic-bezier(.2,.7,.3,1), left .45s cubic-bezier(.2,.7,.3,1)}
 .fill.over{background:var(--over)!important}
 .marke{position:absolute;top:0;bottom:0;width:2px;background:var(--bg);opacity:.85;z-index:2}
 .marke b{
@@ -229,6 +230,20 @@ video{width:100%;display:block;max-height:56vh;object-fit:cover}
 .result{position:relative}
 #tag-detail{margin-top:14px}
 
+/* ---------- Früchte und Gemüse ---------- */
+.fz{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 13px;margin-bottom:8px}
+.fz-name{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.fz-unten{display:flex;align-items:center;gap:8px;margin-top:10px}
+.step{display:flex;align-items:center;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.step button{width:38px;height:38px;font-size:19px;color:var(--ink);display:grid;place-items:center}
+.step button:active{background:var(--panel-2)}
+.step b{min-width:42px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:15px}
+.fz-add{flex:1;height:38px;border-radius:8px;background:var(--ink);color:#101215;font-weight:700;font-size:14px}
+.vit{margin-bottom:14px}
+.vit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.vit-name{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.vit-wert{font-family:'IBM Plex Mono',monospace;font-size:13px}
+
 /* ---------- Navigation ---------- */
 nav{
   position:fixed;left:0;right:0;bottom:0;z-index:30;
@@ -237,10 +252,10 @@ nav{
   padding-bottom:env(safe-area-inset-bottom);
 }
 nav button{
-  flex:1;padding:11px 2px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;
-  font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--muted);
+  flex:1;min-width:0;padding:10px 1px 11px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:8px;letter-spacing:0;text-transform:uppercase;font-weight:600;color:var(--muted);
 }
-nav button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button[aria-current="true"]{color:var(--ink)}
 
 /* ---------- Trainingsplan ---------- */
@@ -382,7 +397,7 @@ input[type=range]{
   <div class="gauge">
     <div class="gauge-top"><div class="gauge-name">Fett</div><div class="gauge-val mono"><b id="ft-ist">0</b><i> / <span id="ft-ziel">0</span> g</i></div></div>
     <div class="track"><div class="fill" id="f-ft" style="background:var(--fat)"></div></div>
-    <div class="gauge-sub" id="s-ft">&nbsp;</div>
+    <div class="gauge-sub" id="s-ft" style="margin-top:18px">&nbsp;</div>
   </div>
 
   <h2 class="eyebrow">Gegessen</h2>
@@ -437,6 +452,28 @@ input[type=range]{
 
   <h2 class="eyebrow">Zuletzt gegessen</h2>
   <div id="verlauf"></div>
+</section>
+
+<!-- ============ FR&Uuml;CHTE &amp; GEM&Uuml;SE ============ -->
+<section class="view" id="v-frisch">
+  <div class="hero" style="margin-bottom:0">
+    <div class="goal">Fr&uuml;chte &amp; Gem&uuml;se heute</div>
+    <div class="big mono"><span id="port-anz">0</span><em>von 5 Portionen</em></div>
+    <div class="gauge" style="margin-top:14px;margin-bottom:0">
+      <div class="track"><div class="fill" id="f-port" style="background:var(--carb)"></div></div>
+      <div class="gauge-sub" id="port-sub">&nbsp;</div>
+    </div>
+  </div>
+
+  <h2 class="eyebrow">Vitamine und Mineralstoffe</h2>
+  <div id="vitamine"></div>
+
+  <h2 class="eyebrow">Eintragen</h2>
+  <div class="field">
+    <label for="f-suche">Suchen</label>
+    <input id="f-suche" type="search" placeholder="z.B. Broccoli, Avocado, Apfel">
+  </div>
+  <div id="f-liste"></div>
 </section>
 
 <!-- ============ WOCHE ============ -->
@@ -517,6 +554,7 @@ input[type=range]{
 <nav>
   <button data-view="heute" aria-current="true"><svg viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg>Heute</button>
   <button data-view="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Erfassen</button>
+  <button data-view="frisch"><svg viewBox="0 0 24 24"><path d="M12 8c-1.5-2-4-2.5-5.5-1C4.5 8.5 5 13 7 16.5c1 1.7 2.5 3 3.5 3s1-1 1.5-1 .5 1 1.5 1 2.5-1.3 3.5-3c2-3.5 2.5-8 .5-9.5C15.9 5.5 13.5 6 12 8Z"/><path d="M12 8V5m0 0c0-1 .8-2 2-2"/></svg>Fr&uuml;chte</button>
   <button data-view="woche"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Woche</button>
   <button data-view="ideen"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6v.6h5.6v-.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>Ideen</button>
   <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11"/></svg>Plan</button>
@@ -540,6 +578,9 @@ function laden(){
   // fr\u00fchere Profile hatten ein einzelnes Ziel als Text
   if(db.profil && !Array.isArray(db.profil.ziel)){
     db.profil.ziel = db.profil.ziel === 'recomp' ? ['cut','bulk'] : [db.profil.ziel];
+  }
+  // Zielwerte nach einem Update neu rechnen
+  if(db.profil && (!db.profil.ziele || db.profil.ziele.v !== 6)){
     db.profil.ziele = zieleRechnen(db.profil);
   }
 }
@@ -621,10 +662,11 @@ function zieleRechnen(p){
 
   const zonen = {
     protein: {min: rund(protein*0.67), gut: rund(protein*0.80), ziel: rund(protein)},
-    kh:      {min: rund(khMin),        gut: rund(khGut),        ziel: rund(kh)}
+    kh:      {min: rund(khMin),        gut: rund(khGut),        ziel: rund(kh)},
+    fett:    {min: 0,                  gut: rund(fett*0.80),    ziel: rund(fett)}
   };
 
-  return { zonen, bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
+  return { v:6, zonen, bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
            fett:rund(fett), kh:rund(kh), zucker:rund(zucker), zuckerProzent,
            khProKg: Math.round(khProKg*10)/10, tempo: Math.round(tempo*100)/100,
            tempoProzent: Math.round(tempoProzent*10)/10, text };
@@ -691,6 +733,7 @@ document.querySelector('nav').addEventListener('click', e => {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   document.getElementById('v-'+b.dataset.view).classList.add('on');
   window.scrollTo(0,0);
+  if(b.dataset.view==='frisch') frischZeichnen();
   if(b.dataset.view==='woche') wocheZeichnen();
   if(b.dataset.view==='ideen') ideenZeichnen();
   if(b.dataset.view==='plan') planZeichnen();
@@ -713,10 +756,12 @@ function balken(id, ist, ziel){
 function zonenBalken(fid, sid, ist, z, einheit){
   const el = document.getElementById(fid);
   const track = el.parentElement;
+  const hatMin = z.min > 0;
 
   track.querySelectorAll('.marke').forEach(m => m.remove());
   if(z.ziel > 0){
-    [[z.min,'min'], [z.gut,'gut']].forEach(function(paar){
+    const marken = hatMin ? [[z.min,'min'], [z.gut,'gut']] : [[z.gut,'gut']];
+    marken.forEach(function(paar){
       const m = document.createElement('i');
       m.className = 'marke';
       m.style.left = Math.min(99, paar[0]/z.ziel*100) + '%';
@@ -733,18 +778,46 @@ function zonenBalken(fid, sid, ist, z, einheit){
   if(ist >= z.ziel*1.35){ wort = 'mehr als nötig — der Rest bringt nichts mehr'; kl = 'knapp'; }
   else if(ist >= z.ziel){ wort = 'perfekt'; kl = 'gut'; }
   else if(ist >= z.gut) { wort = 'gut — noch '+rund(z.ziel-ist)+' '+einheit+' bis perfekt'; kl = 'gut'; }
-  else if(ist >= z.min) { wort = 'über dem Minimum — noch '+rund(z.gut-ist)+' '+einheit+' bis gut'; kl = 'knapp'; }
-  else                  { wort = 'noch '+rund(z.min-ist)+' '+einheit+' bis zum Minimum'; kl = 'weg'; }
+  else if(hatMin && ist >= z.min){ wort = 'über dem Minimum — noch '+rund(z.gut-ist)+' '+einheit+' bis gut'; kl = 'knapp'; }
+  else if(hatMin)       { wort = 'noch '+rund(z.min-ist)+' '+einheit+' bis zum Minimum'; kl = 'weg'; }
+  else                  { wort = 'noch '+rund(z.gut-ist)+' '+einheit+' bis gut'; kl = 'knapp'; }
 
   document.getElementById(sid).innerHTML =
-    '<span class="stand '+kl+'">'+wort+'</span> · min '+z.min
-    + ' · gut '+z.gut+' · perfekt '+z.ziel+' '+einheit;
+    '<span class="stand '+kl+'">'+wort+'</span> · '
+    + (hatMin ? 'min '+z.min+' · ' : '')
+    + 'gut '+z.gut+' · perfekt '+z.ziel+' '+einheit;
 }
+
+/* Ganze Früchte und Gemüse: Kalorien, Fett und Kohlenhydrate zählen normal,
+   ihr Zucker aber nicht — die WHO-Grenze gilt nur für freien Zucker. */
+function istFrucht(e){ return !!e.vit || e.marke === 'Früchte & Gemüse'; }
 
 function tagesSumme(datum){
   return db.eintraege.filter(e=>e.datum===datum).reduce((s,e)=>({
-    kcal:s.kcal+e.kcal, protein:s.protein+e.protein, kh:s.kh+e.kh, zucker:s.zucker+e.zucker, fett:s.fett+e.fett
-  }), {kcal:0,protein:0,kh:0,zucker:0,fett:0});
+    kcal:    s.kcal    + e.kcal,
+    protein: s.protein + e.protein,
+    kh:      s.kh      + e.kh,
+    fett:    s.fett    + e.fett,
+    zucker:       s.zucker       + (istFrucht(e) ? 0 : e.zucker),
+    zuckerFrucht: s.zuckerFrucht + (istFrucht(e) ? e.zucker : 0)
+  }), {kcal:0,protein:0,kh:0,zucker:0,zuckerFrucht:0,fett:0});
+}
+
+function zuckerBalken(){
+  const z = db.profil.ziele;
+  const t = tagesSumme(heute());
+
+  document.getElementById('z-ist').textContent  = rund(t.zucker);
+  document.getElementById('z-ziel').textContent = z.zucker;
+  balken('f-z', t.zucker, z.zucker);
+
+  document.getElementById('z-hint').innerHTML =
+    (t.zucker > z.zucker
+      ? '<span class="stand weg">über der Grenze</span> — meistens sind Getränke und Süsses der Grund.'
+      : '<span class="stand gut">im Rahmen</span> — noch '+rund(z.zucker-t.zucker)+' g frei.')
+    + (t.zuckerFrucht > 0
+        ? ' Die ' + rund(t.zuckerFrucht) + ' g aus ganzen Früchten und Gemüse zählen hier nicht mit.'
+        : '');
 }
 
 function heuteZeichnen(){
@@ -760,21 +833,16 @@ function heuteZeichnen(){
     document.getElementById(a).textContent = rund(ist);
     document.getElementById(b).textContent = ziel;
   };
-  const zn = z.zonen || {protein:{min:0,gut:0,ziel:z.protein}, kh:{min:0,gut:0,ziel:z.kh}};
+  const zn = z.zonen || {protein:{min:0,gut:0,ziel:z.protein}, kh:{min:0,gut:0,ziel:z.kh},
+                         fett:{min:0,gut:0,ziel:z.fett}};
 
   anzeige('p-ist','p-ziel',   s.protein, z.protein);  zonenBalken('f-p','s-p',   s.protein, zn.protein, 'g');
   anzeige('k-ist','k-ziel',   s.kh,      z.kh);       zonenBalken('f-k','s-k',   s.kh,      zn.kh,      'g');
   anzeige('ft-ist','ft-ziel', s.fett, z.fett);
-  balken('f-ft', s.fett, z.fett);
-  document.getElementById('s-ft').innerHTML = '&nbsp;';
+  zonenBalken('f-ft','s-ft', s.fett, zn.fett, 'g');
 
-  // Zucker ist eine Grenze, keine Zielzone
-  anzeige('z-ist','z-ziel', s.zucker, z.zucker);
-  balken('f-z', s.zucker, z.zucker);
-  document.getElementById('z-hint').innerHTML =
-    s.zucker > z.zucker
-      ? '<span class="stand weg">über der Grenze</span> — meistens sind Getränke und Süsses der Grund.'
-      : '<span class="stand gut">im Rahmen</span> — noch '+rund(z.zucker-s.zucker)+' g frei. Weniger ist hier immer besser.';
+  // Zucker: freier Zucker gegen die Grenze, Fruchtzucker daneben
+  zuckerBalken();
 
   const liste = document.getElementById('liste');
   const heutige = db.eintraege.filter(e=>e.datum===heute()).reverse();
@@ -1078,6 +1146,148 @@ function verlaufZeichnen(){
     sichern(); verlaufZeichnen(); toast('Liste geleert');
   });
 }
+
+/* =========================================================
+   6b. Früchte und Gemüse
+   ========================================================= */
+// Werte pro 100 g, roh. vit: C mg, A µg, K µg, Folat µg, Kalium mg, Ballaststoffe g
+// stueck = übliches Gewicht einer Portion bzw. eines Stücks in Gramm
+const FRISCH = [
+  {n:'Apfel',          e:'Stück',   g:180, kcal:52, p:0.3, kh:14,  z:10,   f:0.2,  v:[4.6,3,2.2,3,107,2.4]},
+  {n:'Banane',         e:'Stück',   g:120, kcal:89, p:1.1, kh:23,  z:12,   f:0.3,  v:[8.7,3,0.5,20,358,2.6]},
+  {n:'Orange',         e:'Stück',   g:130, kcal:47, p:0.9, kh:12,  z:9,    f:0.1,  v:[53,11,0,30,181,2.4]},
+  {n:'Mandarine',      e:'Stück',   g:90,  kcal:53, p:0.8, kh:13,  z:11,   f:0.3,  v:[27,34,0,16,166,1.8]},
+  {n:'Kiwi',           e:'Stück',   g:75,  kcal:61, p:1.1, kh:15,  z:9,    f:0.5,  v:[93,4,40,25,312,3]},
+  {n:'Birne',          e:'Stück',   g:180, kcal:57, p:0.4, kh:15,  z:10,   f:0.1,  v:[4.3,1,4.4,7,116,3.1]},
+  {n:'Erdbeeren',      e:'Portion', g:150, kcal:32, p:0.7, kh:7.7, z:4.9,  f:0.3,  v:[59,1,2.2,24,153,2]},
+  {n:'Heidelbeeren',   e:'Portion', g:125, kcal:57, p:0.7, kh:14,  z:10,   f:0.3,  v:[9.7,3,19,6,77,2.4]},
+  {n:'Trauben',        e:'Portion', g:150, kcal:69, p:0.7, kh:18,  z:16,   f:0.2,  v:[3.2,3,15,2,191,0.9]},
+  {n:'Ananas',         e:'Portion', g:150, kcal:50, p:0.5, kh:13,  z:10,   f:0.1,  v:[48,3,0.1,18,109,1.4]},
+  {n:'Mango',          e:'Stück',   g:200, kcal:60, p:0.8, kh:15,  z:14,   f:0.4,  v:[36,54,4.2,43,168,1.6]},
+  {n:'Wassermelone',   e:'Portion', g:200, kcal:30, p:0.6, kh:7.6, z:6.2,  f:0.2,  v:[8.1,28,0.1,3,112,0.4]},
+  {n:'Avocado',        e:'Stück',   g:150, kcal:160,p:2,   kh:8.5, z:0.7,  f:15,   v:[10,7,21,81,485,6.7]},
+  {n:'Zitrone',        e:'Stück',   g:60,  kcal:29, p:1.1, kh:9,   z:2.5,  f:0.3,  v:[53,1,0,11,138,2.8]},
+  {n:'Broccoli',       e:'Portion', g:150, kcal:34, p:2.8, kh:7,   z:1.7,  f:0.4,  v:[89,31,102,63,316,2.6]},
+  {n:'Rüebli',         e:'Stück',   g:80,  kcal:41, p:0.9, kh:10,  z:4.7,  f:0.2,  v:[5.9,835,13,19,320,2.8]},
+  {n:'Tomate',         e:'Stück',   g:120, kcal:18, p:0.9, kh:3.9, z:2.6,  f:0.2,  v:[14,42,7.9,15,237,1.2]},
+  {n:'Gurke',          e:'Portion', g:100, kcal:15, p:0.7, kh:3.6, z:1.7,  f:0.1,  v:[2.8,5,16,7,147,0.5]},
+  {n:'Peperoni rot',   e:'Stück',   g:150, kcal:31, p:1,   kh:6,   z:4.2,  f:0.3,  v:[128,157,4.9,46,211,2.1]},
+  {n:'Spinat',         e:'Portion', g:100, kcal:23, p:2.9, kh:3.6, z:0.4,  f:0.4,  v:[28,469,483,194,558,2.2]},
+  {n:'Grünkohl',       e:'Portion', g:100, kcal:49, p:4.3, kh:9,   z:2.3,  f:0.9,  v:[120,500,705,141,491,3.6]},
+  {n:'Kopfsalat',      e:'Portion', g:80,  kcal:15, p:1.4, kh:2.9, z:0.8,  f:0.2,  v:[9.2,370,126,38,194,1.3]},
+  {n:'Zucchini',       e:'Stück',   g:200, kcal:17, p:1.2, kh:3.1, z:2.5,  f:0.3,  v:[18,10,4.3,24,261,1]},
+  {n:'Blumenkohl',     e:'Portion', g:150, kcal:25, p:1.9, kh:5,   z:1.9,  f:0.3,  v:[48,0,15,57,299,2]},
+  {n:'Rosenkohl',      e:'Portion', g:150, kcal:43, p:3.4, kh:9,   z:2.2,  f:0.3,  v:[85,38,177,61,389,3.8]},
+  {n:'Zwiebel',        e:'Stück',   g:110, kcal:40, p:1.1, kh:9.3, z:4.2,  f:0.1,  v:[7.4,0,0.4,19,146,1.7]},
+  {n:'Champignons',    e:'Portion', g:100, kcal:22, p:3.1, kh:3.3, z:2,    f:0.3,  v:[2.1,0,0,17,318,1]},
+  {n:'Erbsen',         e:'Portion', g:100, kcal:81, p:5.4, kh:14,  z:5.7,  f:0.4,  v:[40,38,25,65,244,5.1]},
+  {n:'Süsskartoffel',  e:'Stück',   g:150, kcal:86, p:1.6, kh:20,  z:4.2,  f:0.1,  v:[2.4,709,1.8,11,337,3]},
+  {n:'Kartoffel',      e:'Stück',   g:150, kcal:77, p:2,   kh:17,  z:0.8,  f:0.1,  v:[19.7,0,2,15,425,2.2]}
+];
+
+// Tagesreferenzwerte: Vitamin C, A, K, Folat, Kalium, Ballaststoffe
+const VIT_NAMEN = ['Vitamin C','Vitamin A','Vitamin K','Folat','Kalium','Ballaststoffe'];
+const VIT_EINH  = ['mg','µg','µg','µg','mg','g'];
+const VIT_REF   = [80, 800, 75, 200, 2000, 30];
+const VIT_FARBE = ['var(--sugar)','var(--carb)','var(--protein)','var(--fat)','var(--kcal)','var(--carb)'];
+
+let anzahlen = {};   // gewählte Stückzahl je Eintrag
+
+function tagesVitamine(datum){
+  const summe = [0,0,0,0,0,0];
+  let portionen = 0;
+  db.eintraege.filter(e => e.datum === datum && e.vit).forEach(e => {
+    e.vit.forEach((w,i) => summe[i] += w);
+    portionen += e.portionen || 0;
+  });
+  return {summe, portionen};
+}
+
+function frischZeichnen(){
+  const {summe, portionen} = tagesVitamine(heute());
+
+  document.getElementById('port-anz').textContent = Math.round(portionen*10)/10;
+  document.getElementById('f-port').style.width = Math.min(100, portionen/5*100) + '%';
+  document.getElementById('port-sub').innerHTML = portionen >= 5
+    ? '<span class="stand gut">geschafft</span> — fünf am Tag sind die Empfehlung.'
+    : 'Noch ' + (Math.round((5-portionen)*10)/10) + ' Portionen bis zur Empfehlung von fünf am Tag.';
+
+  document.getElementById('vitamine').innerHTML = VIT_NAMEN.map((name,i)=>{
+    const q = summe[i]/VIT_REF[i];
+    const kl = q >= 1 ? 'gut' : (q >= 0.5 ? 'knapp' : 'weg');
+    return '<div class="vit">'
+      + '<div class="vit-top"><div class="vit-name">'+name+'</div>'
+      +   '<div class="vit-wert"><span class="stand '+kl+'">'+Math.round(q*100)+' %</span> '
+      +   '<span style="color:var(--muted)">'+Math.round(summe[i]*10)/10+' / '+VIT_REF[i]+' '+VIT_EINH[i]+'</span></div></div>'
+      + '<div class="track"><div class="fill" style="width:'+Math.min(100,q*100)+'%;background:'+VIT_FARBE[i]+'"></div></div>'
+      + '</div>';
+  }).join('');
+
+  frischListe();
+}
+
+function frischListe(){
+  const q = (document.getElementById('f-suche').value || '').toLowerCase().trim();
+  const treffer = FRISCH.map((x,i)=>({x,i}))
+    .filter(o => !q || o.x.n.toLowerCase().indexOf(q) > -1);
+
+  document.getElementById('f-liste').innerHTML = treffer.length
+    ? treffer.map(o => {
+        const x = o.x, n = anzahlen[o.i] || 1;
+        const kcal = Math.round(x.kcal * x.g/100 * n);
+        return '<div class="fz">'
+          + '<div class="fz-name">'+esc(x.n)+'</div>'
+          + '<div class="umeta">1 '+x.e+' ≈ '+x.g+' g · '+Math.round(x.kcal*x.g/100)+' kcal · '
+          +   'Fett '+(Math.round(x.f*x.g/100*10)/10)+' g · Vit C '+(Math.round(x.v[0]*x.g/100))+' mg</div>'
+          + '<div class="fz-unten">'
+          +   '<div class="step"><button data-minus="'+o.i+'">−</button>'
+          +     '<b>'+n+'</b><button data-plus="'+o.i+'">+</button></div>'
+          +   '<button class="fz-add" data-add="'+o.i+'">'+kcal+' kcal eintragen</button>'
+          + '</div></div>';
+      }).join('')
+    : '<div class="empty">Nichts gefunden. Andere Sachen trägst du unter <b>Erfassen</b> ein.</div>';
+
+  document.querySelectorAll('#f-liste [data-minus]').forEach(b => b.addEventListener('click', ()=>{
+    const i = b.dataset.minus;
+    anzahlen[i] = Math.max(1, (anzahlen[i]||1) - 1);
+    frischListe();
+  }));
+  document.querySelectorAll('#f-liste [data-plus]').forEach(b => b.addEventListener('click', ()=>{
+    const i = b.dataset.plus;
+    anzahlen[i] = Math.min(20, (anzahlen[i]||1) + 1);
+    frischListe();
+  }));
+  document.querySelectorAll('#f-liste [data-add]').forEach(b => b.addEventListener('click', ()=>{
+    frischEintragen(+b.dataset.add);
+  }));
+}
+
+function frischEintragen(i){
+  const x = FRISCH[i];
+  const n = anzahlen[i] || 1;
+  const menge = x.g * n;
+  const f = menge/100;
+
+  db.eintraege.push({
+    id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
+    datum: heute(), zeit: new Date().toISOString(),
+    name: (n > 1 ? n + '× ' : '') + x.n,
+    marke: 'Früchte & Gemüse',
+    menge: menge,
+    pro100: {kcal:x.kcal, protein:x.p, kh:x.kh, zucker:x.z, fett:x.f},
+    kcal: x.kcal*f, protein: x.p*f, kh: x.kh*f, zucker: x.z*f, fett: x.f*f,
+    vit: x.v.map(w => w*f),
+    portionen: n
+  });
+
+  anzahlen[i] = 1;
+  sichern();
+  heuteZeichnen();
+  frischZeichnen();
+  toast(x.n + ' eingetragen');
+}
+
+document.getElementById('f-suche').addEventListener('input', frischListe);
 
 /* =========================================================
    7. Woche
@@ -1715,7 +1925,7 @@ function profilZeichnen(){
     + zeile('Kohlenhydrate', z.zonen
         ? (z.zonen.kh.min+' / '+z.zonen.kh.gut+' / '+z.kh+' g')
         : (z.kh+' g'))
-    + zeile('Fett', z.fett+' g')
+    + zeile('Fett', z.zonen && z.zonen.fett ? (z.zonen.fett.gut+' / '+z.fett+' g') : (z.fett+' g'))
     + zeile('Zucker-Limit', z.zucker+' g  ('+z.zuckerProzent+' %)')
     + zeile('Tempo', z.tempo === 0 ? 'Gewicht halten'
         : (z.tempo > 0 ? '≈ −' : '≈ +') + Math.abs(z.tempo).toFixed(2)
