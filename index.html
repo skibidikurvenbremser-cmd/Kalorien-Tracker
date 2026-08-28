@@ -83,6 +83,14 @@ h2.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
 }
 .fill{height:100%;width:0;border-radius:2px;transition:width .45s cubic-bezier(.2,.7,.3,1)}
 .fill.over{background:var(--over)!important}
+.marke{position:absolute;top:0;bottom:0;width:2px;background:var(--bg);opacity:.85;z-index:2}
+.marke b{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;
+}
+.gauge{padding-bottom:2px}
+.stand{font-weight:600}
+.stand.gut{color:var(--carb)} .stand.knapp{color:var(--sugar)} .stand.weg{color:var(--over)}
 .gauge-sub{font-size:12px;color:var(--muted);margin-top:5px}
 
 .hero{
@@ -359,6 +367,7 @@ input[type=range]{
   <div class="gauge">
     <div class="gauge-top"><div class="gauge-name">Protein</div><div class="gauge-val mono"><b id="p-ist">0</b><i> / <span id="p-ziel">0</span> g</i></div></div>
     <div class="track"><div class="fill" id="f-p" style="background:var(--protein)"></div></div>
+    <div class="gauge-sub" id="s-p" style="margin-top:18px">&nbsp;</div>
   </div>
   <div class="gauge">
     <div class="gauge-top"><div class="gauge-name">Zucker · Limit</div><div class="gauge-val mono"><b id="z-ist">0</b><i> / <span id="z-ziel">0</span> g</i></div></div>
@@ -368,10 +377,12 @@ input[type=range]{
   <div class="gauge">
     <div class="gauge-top"><div class="gauge-name">Kohlenhydrate</div><div class="gauge-val mono"><b id="k-ist">0</b><i> / <span id="k-ziel">0</span> g</i></div></div>
     <div class="track"><div class="fill" id="f-k" style="background:var(--carb)"></div></div>
+    <div class="gauge-sub" id="s-k" style="margin-top:18px">&nbsp;</div>
   </div>
   <div class="gauge">
     <div class="gauge-top"><div class="gauge-name">Fett</div><div class="gauge-val mono"><b id="ft-ist">0</b><i> / <span id="ft-ziel">0</span> g</i></div></div>
     <div class="track"><div class="fill" id="f-ft" style="background:var(--fat)"></div></div>
+    <div class="gauge-sub" id="s-ft">&nbsp;</div>
   </div>
 
   <h2 class="eyebrow">Gegessen</h2>
@@ -577,8 +588,12 @@ function zieleRechnen(p){
     faktor = 1.00; proteinProKg = 2.0; fettAnteil = 0.25;
   }
 
-  const kcal    = tdee * faktor;
-  const protein = p.gewicht * proteinProKg;
+  const kcal = tdee * faktor;
+
+  // Protein deckeln: mehr als 150 g bringt kaum noch etwas.
+  // Nur bei deutlich schwereren Leuten wird der Deckel angehoben.
+  const proteinDeckel = Math.max(150, p.gewicht * 1.8);
+  const protein = Math.min(p.gewicht * proteinProKg, proteinDeckel);
   const fett    = Math.max(kcal*fettAnteil/9, p.gewicht*0.6);   // nie unter 0.6 g/kg
   const kh      = Math.max(0, (kcal - protein*4 - fett*9) / 4);
 
@@ -598,7 +613,18 @@ function zieleRechnen(p){
   if(leanB) namen.push('Lean bleiben');
   const text = namen.length ? namen.join(' + ') : 'Gewicht halten';
 
-  return { bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
+  // Zonen: Minimum / gut / perfekt
+  // Kohlenhydrate: Minimum sind immer 200 g — darunter leidet das Training.
+  // Nur wenn das Kalorienziel selbst keine 200 g hergibt, rückt die Grenze mit nach unten.
+  const khMin = Math.min(200, kh*0.90);
+  const khGut = khMin + (kh - khMin)*0.5;
+
+  const zonen = {
+    protein: {min: rund(protein*0.67), gut: rund(protein*0.80), ziel: rund(protein)},
+    kh:      {min: rund(khMin),        gut: rund(khGut),        ziel: rund(kh)}
+  };
+
+  return { zonen, bmr:rund(bmr), tdee:rund(tdee), kcal:rund(kcal), protein:rund(protein),
            fett:rund(fett), kh:rund(kh), zucker:rund(zucker), zuckerProzent,
            khProKg: Math.round(khProKg*10)/10, tempo: Math.round(tempo*100)/100,
            tempoProzent: Math.round(tempoProzent*10)/10, text };
@@ -683,6 +709,38 @@ function balken(id, ist, ziel){
   el.classList.toggle('over', q > 1.05);
 }
 
+/* Balken mit Zonen: Minimum, gut, perfekt — plus ein Wort dazu, wo man steht */
+function zonenBalken(fid, sid, ist, z, einheit){
+  const el = document.getElementById(fid);
+  const track = el.parentElement;
+
+  track.querySelectorAll('.marke').forEach(m => m.remove());
+  if(z.ziel > 0){
+    [[z.min,'min'], [z.gut,'gut']].forEach(function(paar){
+      const m = document.createElement('i');
+      m.className = 'marke';
+      m.style.left = Math.min(99, paar[0]/z.ziel*100) + '%';
+      m.innerHTML = '<b>'+paar[1]+'</b>';
+      track.appendChild(m);
+    });
+  }
+
+  const q = z.ziel > 0 ? ist/z.ziel : 0;
+  el.style.width = Math.min(100, q*100) + '%';
+  el.classList.remove('over');
+
+  let wort, kl;
+  if(ist >= z.ziel*1.35){ wort = 'mehr als nötig — der Rest bringt nichts mehr'; kl = 'knapp'; }
+  else if(ist >= z.ziel){ wort = 'perfekt'; kl = 'gut'; }
+  else if(ist >= z.gut) { wort = 'gut — noch '+rund(z.ziel-ist)+' '+einheit+' bis perfekt'; kl = 'gut'; }
+  else if(ist >= z.min) { wort = 'über dem Minimum — noch '+rund(z.gut-ist)+' '+einheit+' bis gut'; kl = 'knapp'; }
+  else                  { wort = 'noch '+rund(z.min-ist)+' '+einheit+' bis zum Minimum'; kl = 'weg'; }
+
+  document.getElementById(sid).innerHTML =
+    '<span class="stand '+kl+'">'+wort+'</span> · min '+z.min
+    + ' · gut '+z.gut+' · perfekt '+z.ziel+' '+einheit;
+}
+
 function tagesSumme(datum){
   return db.eintraege.filter(e=>e.datum===datum).reduce((s,e)=>({
     kcal:s.kcal+e.kcal, protein:s.protein+e.protein, kh:s.kh+e.kh, zucker:s.zucker+e.zucker, fett:s.fett+e.fett
@@ -698,19 +756,25 @@ function heuteZeichnen(){
   document.getElementById('kcal-ziel').textContent = z.kcal;
   balken('f-kcal', s.kcal, z.kcal);
 
-  const setz = (a,b,ist,ziel,fid)=>{
+  const anzeige = (a,b,ist,ziel)=>{
     document.getElementById(a).textContent = rund(ist);
     document.getElementById(b).textContent = ziel;
-    balken(fid, ist, ziel);
   };
-  setz('p-ist','p-ziel', s.protein, z.protein, 'f-p');
-  setz('z-ist','z-ziel', s.zucker, z.zucker, 'f-z');
-  setz('k-ist','k-ziel', s.kh, z.kh, 'f-k');
-  setz('ft-ist','ft-ziel', s.fett, z.fett, 'f-ft');
+  const zn = z.zonen || {protein:{min:0,gut:0,ziel:z.protein}, kh:{min:0,gut:0,ziel:z.kh}};
 
-  document.getElementById('z-hint').textContent =
-    s.zucker > z.zucker ? 'Über dem Limit — meistens sind Getränke und Süsses der Grund.' :
-    'Limit = '+(z.zuckerProzent||10)+' % deiner Kalorien'+(z.zuckerProzent===5 ? ' \u2014 der strengere WHO-Richtwert f\u00fcr Definition.' : ', wie es die WHO empfiehlt.');
+  anzeige('p-ist','p-ziel',   s.protein, z.protein);  zonenBalken('f-p','s-p',   s.protein, zn.protein, 'g');
+  anzeige('k-ist','k-ziel',   s.kh,      z.kh);       zonenBalken('f-k','s-k',   s.kh,      zn.kh,      'g');
+  anzeige('ft-ist','ft-ziel', s.fett, z.fett);
+  balken('f-ft', s.fett, z.fett);
+  document.getElementById('s-ft').innerHTML = '&nbsp;';
+
+  // Zucker ist eine Grenze, keine Zielzone
+  anzeige('z-ist','z-ziel', s.zucker, z.zucker);
+  balken('f-z', s.zucker, z.zucker);
+  document.getElementById('z-hint').innerHTML =
+    s.zucker > z.zucker
+      ? '<span class="stand weg">über der Grenze</span> — meistens sind Getränke und Süsses der Grund.'
+      : '<span class="stand gut">im Rahmen</span> — noch '+rund(z.zucker-s.zucker)+' g frei. Weniger ist hier immer besser.';
 
   const liste = document.getElementById('liste');
   const heutige = db.eintraege.filter(e=>e.datum===heute()).reverse();
@@ -1646,15 +1710,19 @@ function profilZeichnen(){
     + zeile('Grundumsatz', z.bmr+' kcal')
     + zeile('Tagesverbrauch', z.tdee+' kcal')
     + zeile('Kalorien-Ziel', z.kcal+' kcal')
-    + zeile('Protein', z.protein+' g')
-    + zeile('Kohlenhydrate', z.kh+' g  ('+z.khProKg+' g/kg)')
+    + zeile('Protein', z.zonen ? (z.zonen.protein.min+' / '+z.zonen.protein.gut+' / '+z.protein+' g')
+                                : (z.protein+' g'))
+    + zeile('Kohlenhydrate', z.zonen
+        ? (z.zonen.kh.min+' / '+z.zonen.kh.gut+' / '+z.kh+' g')
+        : (z.kh+' g'))
     + zeile('Fett', z.fett+' g')
     + zeile('Zucker-Limit', z.zucker+' g  ('+z.zuckerProzent+' %)')
     + zeile('Tempo', z.tempo === 0 ? 'Gewicht halten'
         : (z.tempo > 0 ? '≈ −' : '≈ +') + Math.abs(z.tempo).toFixed(2)
           + ' kg/Woche  ('+z.tempoProzent+' %)')
     + zeile('Erfasste Einträge', db.eintraege.length)
-    + '<p class="note" style="margin:14px 0 0">Kohlenhydrate sind der Rest, nachdem Protein und Fett stehen &mdash; '
+    + '<p class="note" style="margin:14px 0 0"><b>Minimum / gut / perfekt</b> — so liest du die drei Zahlen bei Protein, Kohlenhydraten und Fett. Darüber schadet nichts, bringt aber auch nichts mehr. Kalorien und Zucker sind dagegen Grenzen, die du nicht überschreiten willst.</p>'
+    + '<p class="note" style="margin:10px 0 0">Kohlenhydrate sind der Rest, nachdem Protein und Fett stehen &mdash; '
     + '2 bis 5 g pro kg sind der Richtwert, damit das Training läuft. '
     + (z.khProKg < 2 ? '<b>Deine liegen darunter.</b> Falls das Gym zäh wird, iss etwas mehr davon und dafür weniger Fett. ' : '')
     + 'Ein Tempo von 0.5 bis 1 % Körpergewicht pro Woche hält beim Abnehmen die Muskeln.</p>';
