@@ -238,11 +238,25 @@ video{width:100%;display:block;max-height:56vh;object-fit:cover}
 .step button{width:38px;height:38px;font-size:19px;color:var(--ink);display:grid;place-items:center}
 .step button:active{background:var(--panel-2)}
 .step b{min-width:42px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:15px}
+.fz-gramm{flex:none;width:104px;height:38px;padding:0 10px;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:15px}
 .fz-add{flex:1;height:38px;border-radius:8px;background:var(--ink);color:#101215;font-weight:700;font-size:14px}
 .vit{margin-bottom:14px}
 .vit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
 .vit-name{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .vit-wert{font-family:'IBM Plex Mono',monospace;font-size:13px}
+
+/* ---------- Gruppe ---------- */
+.gr-karte{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:10px}
+.gr-karte.ich{border-color:var(--protein)}
+.gr-kopf{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.gr-name{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.gr-zahlen{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.gr-zahlen div{background:var(--panel-2);border-radius:7px;padding:8px 6px;text-align:center}
+.gr-zahlen b{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600}
+.gr-zahlen span{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.gr-essen{font-size:13px;color:var(--muted);line-height:1.7}
+.gr-essen b{color:var(--ink);font-weight:600}
 
 /* ---------- Navigation ---------- */
 nav{
@@ -253,7 +267,7 @@ nav{
 }
 nav button{
   flex:1;min-width:0;padding:10px 1px 11px;display:flex;flex-direction:column;align-items:center;gap:3px;
-  font-size:8px;letter-spacing:0;text-transform:uppercase;font-weight:600;color:var(--muted);
+  font-size:7.5px;letter-spacing:0;text-transform:uppercase;font-weight:600;color:var(--muted);
 }
 nav button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button[aria-current="true"]{color:var(--ink)}
@@ -469,6 +483,10 @@ input[type=range]{
   <div id="vitamine"></div>
 
   <h2 class="eyebrow">Eintragen</h2>
+  <div class="seg" id="f-modus" style="margin-bottom:14px">
+    <button type="button" data-v="stueck" aria-pressed="true">St&uuml;ck</button>
+    <button type="button" data-v="gramm" aria-pressed="false">Gramm</button>
+  </div>
   <div class="field">
     <label for="f-suche">Suchen</label>
     <input id="f-suche" type="search" placeholder="z.B. Broccoli, Avocado, Apfel">
@@ -512,6 +530,13 @@ input[type=range]{
   <div id="ideen"></div>
 </section>
 
+<!-- ============ GRUPPE ============ -->
+<section class="view" id="v-gruppe">
+  <div class="note" id="gr-status" style="margin:6px 0 14px"></div>
+  <div id="gr-liste"></div>
+  <button class="btn ghost" id="gr-neu" style="margin-top:12px">Aktualisieren</button>
+</section>
+
 <!-- ============ PLAN ============ -->
 <section class="view" id="v-plan">
   <div class="seg" id="tage" style="margin:6px 0 16px"></div>
@@ -545,6 +570,18 @@ input[type=range]{
   <h2 class="eyebrow" style="margin-top:6px">Deine Zielwerte</h2>
   <div class="result" id="profil-werte"></div>
   <button class="btn ghost" id="btn-edit" style="margin-bottom:10px">Eckdaten ändern</button>
+  <h2 class="eyebrow">Gruppe</h2>
+  <div class="result">
+    <p class="note" style="margin:0 0 12px">Alle mit demselben Code sehen gegenseitig, was sie gegessen und trainiert haben. Der Code wird nicht mitgeliefert &mdash; ihr m&uuml;sst ihn euch selber ausmachen.</p>
+    <div class="field"><label for="gr-url">Server-Adresse</label>
+      <input id="gr-url" placeholder="https://....workers.dev"></div>
+    <div class="field"><label for="gr-code">Gruppen-Code</label>
+      <input id="gr-code" placeholder="mindestens 4 Zeichen"></div>
+    <div class="field"><label for="gr-name">Dein Name</label>
+      <input id="gr-name" placeholder="wie du in der Liste erscheinst"></div>
+    <button class="btn ghost" id="gr-save">Speichern</button>
+  </div>
+
   <button class="btn ghost" id="btn-export" style="margin-bottom:10px">Daten als Datei sichern</button>
   <p class="note">Produktdaten kommen von Open Food Facts. Fehlt ein Produkt, trag es einmal von Hand ein — danach steht es unter „Zuletzt gegessen“ bereit.</p>
 </section>
@@ -558,6 +595,7 @@ input[type=range]{
   <button data-view="woche"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Woche</button>
   <button data-view="ideen"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.6v.6h5.6v-.6c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>Ideen</button>
   <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11"/></svg>Plan</button>
+  <button data-view="gruppe"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.4 3-5.2 6.5-5.2s6.5 1.8 6.5 5.2"/><circle cx="17.5" cy="7" r="2.6"/><path d="M17 13.2c2.6.2 4.5 2 4.5 4.8"/></svg>Gruppe</button>
   <button data-view="profil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>Profil</button>
 </nav>
 
@@ -570,7 +608,7 @@ input[type=range]{
    1. Speicher
    ========================================================= */
 const KEY = 'naehrwerk_v1';
-let db = { profil:null, eintraege:[], verlauf:[], training:{}, gym:{} };
+let db = { profil:null, eintraege:[], verlauf:[], training:{}, gym:{}, gruppe:null };
 
 function laden(){
   try{ const r = localStorage.getItem(KEY); if(r) db = Object.assign(db, JSON.parse(r)); }
@@ -587,6 +625,7 @@ function laden(){
 function sichern(){
   try{ localStorage.setItem(KEY, JSON.stringify(db)); }
   catch(e){ toast('Speichern hat nicht geklappt'); }
+  if(typeof gruppeSenden === 'function' && db.profil) gruppeSenden();
 }
 const heute = () => new Date().toISOString().slice(0,10);
 const rund = n => Math.round(n||0);
@@ -686,12 +725,13 @@ function segBinden(id){
       [...box.children].forEach(x => x.setAttribute('aria-pressed', String(x===b)));
     }
     if(id==='tageszeit') ideenZeichnen();
+    if(id==='f-modus') frischListe();
   });
 }
 const segWert  = id => document.querySelector('#'+id+' [aria-pressed="true"]').dataset.v;
 const segWerte = id => [...document.querySelectorAll('#'+id+' [aria-pressed="true"]')].map(b=>b.dataset.v);
 
-['s-sex','s-ziel','tageszeit'].forEach(segBinden);
+['s-sex','s-ziel','tageszeit','f-modus'].forEach(segBinden);
 
 document.getElementById('s-save').addEventListener('click', () => {
   const p = {
@@ -736,6 +776,7 @@ document.querySelector('nav').addEventListener('click', e => {
   if(b.dataset.view==='frisch') frischZeichnen();
   if(b.dataset.view==='woche') wocheZeichnen();
   if(b.dataset.view==='ideen') ideenZeichnen();
+  if(b.dataset.view==='gruppe') gruppeZeichnen();
   if(b.dataset.view==='plan') planZeichnen();
   if(b.dataset.view==='profil') profilZeichnen();
   if(b.dataset.view!=='add') scannerStoppen();
@@ -1153,36 +1194,113 @@ function verlaufZeichnen(){
 // Werte pro 100 g, roh. vit: C mg, A µg, K µg, Folat µg, Kalium mg, Ballaststoffe g
 // stueck = übliches Gewicht einer Portion bzw. eines Stücks in Gramm
 const FRISCH = [
-  {n:'Apfel',          e:'Stück',   g:180, kcal:52, p:0.3, kh:14,  z:10,   f:0.2,  v:[4.6,3,2.2,3,107,2.4]},
-  {n:'Banane',         e:'Stück',   g:120, kcal:89, p:1.1, kh:23,  z:12,   f:0.3,  v:[8.7,3,0.5,20,358,2.6]},
-  {n:'Orange',         e:'Stück',   g:130, kcal:47, p:0.9, kh:12,  z:9,    f:0.1,  v:[53,11,0,30,181,2.4]},
-  {n:'Mandarine',      e:'Stück',   g:90,  kcal:53, p:0.8, kh:13,  z:11,   f:0.3,  v:[27,34,0,16,166,1.8]},
-  {n:'Kiwi',           e:'Stück',   g:75,  kcal:61, p:1.1, kh:15,  z:9,    f:0.5,  v:[93,4,40,25,312,3]},
-  {n:'Birne',          e:'Stück',   g:180, kcal:57, p:0.4, kh:15,  z:10,   f:0.1,  v:[4.3,1,4.4,7,116,3.1]},
-  {n:'Erdbeeren',      e:'Portion', g:150, kcal:32, p:0.7, kh:7.7, z:4.9,  f:0.3,  v:[59,1,2.2,24,153,2]},
-  {n:'Heidelbeeren',   e:'Portion', g:125, kcal:57, p:0.7, kh:14,  z:10,   f:0.3,  v:[9.7,3,19,6,77,2.4]},
-  {n:'Trauben',        e:'Portion', g:150, kcal:69, p:0.7, kh:18,  z:16,   f:0.2,  v:[3.2,3,15,2,191,0.9]},
-  {n:'Ananas',         e:'Portion', g:150, kcal:50, p:0.5, kh:13,  z:10,   f:0.1,  v:[48,3,0.1,18,109,1.4]},
-  {n:'Mango',          e:'Stück',   g:200, kcal:60, p:0.8, kh:15,  z:14,   f:0.4,  v:[36,54,4.2,43,168,1.6]},
-  {n:'Wassermelone',   e:'Portion', g:200, kcal:30, p:0.6, kh:7.6, z:6.2,  f:0.2,  v:[8.1,28,0.1,3,112,0.4]},
-  {n:'Avocado',        e:'Stück',   g:150, kcal:160,p:2,   kh:8.5, z:0.7,  f:15,   v:[10,7,21,81,485,6.7]},
-  {n:'Zitrone',        e:'Stück',   g:60,  kcal:29, p:1.1, kh:9,   z:2.5,  f:0.3,  v:[53,1,0,11,138,2.8]},
-  {n:'Broccoli',       e:'Portion', g:150, kcal:34, p:2.8, kh:7,   z:1.7,  f:0.4,  v:[89,31,102,63,316,2.6]},
-  {n:'Rüebli',         e:'Stück',   g:80,  kcal:41, p:0.9, kh:10,  z:4.7,  f:0.2,  v:[5.9,835,13,19,320,2.8]},
-  {n:'Tomate',         e:'Stück',   g:120, kcal:18, p:0.9, kh:3.9, z:2.6,  f:0.2,  v:[14,42,7.9,15,237,1.2]},
-  {n:'Gurke',          e:'Portion', g:100, kcal:15, p:0.7, kh:3.6, z:1.7,  f:0.1,  v:[2.8,5,16,7,147,0.5]},
-  {n:'Peperoni rot',   e:'Stück',   g:150, kcal:31, p:1,   kh:6,   z:4.2,  f:0.3,  v:[128,157,4.9,46,211,2.1]},
-  {n:'Spinat',         e:'Portion', g:100, kcal:23, p:2.9, kh:3.6, z:0.4,  f:0.4,  v:[28,469,483,194,558,2.2]},
-  {n:'Grünkohl',       e:'Portion', g:100, kcal:49, p:4.3, kh:9,   z:2.3,  f:0.9,  v:[120,500,705,141,491,3.6]},
-  {n:'Kopfsalat',      e:'Portion', g:80,  kcal:15, p:1.4, kh:2.9, z:0.8,  f:0.2,  v:[9.2,370,126,38,194,1.3]},
-  {n:'Zucchini',       e:'Stück',   g:200, kcal:17, p:1.2, kh:3.1, z:2.5,  f:0.3,  v:[18,10,4.3,24,261,1]},
-  {n:'Blumenkohl',     e:'Portion', g:150, kcal:25, p:1.9, kh:5,   z:1.9,  f:0.3,  v:[48,0,15,57,299,2]},
-  {n:'Rosenkohl',      e:'Portion', g:150, kcal:43, p:3.4, kh:9,   z:2.2,  f:0.3,  v:[85,38,177,61,389,3.8]},
-  {n:'Zwiebel',        e:'Stück',   g:110, kcal:40, p:1.1, kh:9.3, z:4.2,  f:0.1,  v:[7.4,0,0.4,19,146,1.7]},
-  {n:'Champignons',    e:'Portion', g:100, kcal:22, p:3.1, kh:3.3, z:2,    f:0.3,  v:[2.1,0,0,17,318,1]},
-  {n:'Erbsen',         e:'Portion', g:100, kcal:81, p:5.4, kh:14,  z:5.7,  f:0.4,  v:[40,38,25,65,244,5.1]},
-  {n:'Süsskartoffel',  e:'Stück',   g:150, kcal:86, p:1.6, kh:20,  z:4.2,  f:0.1,  v:[2.4,709,1.8,11,337,3]},
-  {n:'Kartoffel',      e:'Stück',   g:150, kcal:77, p:2,   kh:17,  z:0.8,  f:0.1,  v:[19.7,0,2,15,425,2.2]}
+  {n:'Ananas',            t:'f', e:'Portion', g:150, kcal:50.0, p:0.5, kh:13.0, z:10.0, f:0.1, v:[48.0,3.0,0.1,18.0,109.0,1.4]},
+  {n:'Apfel',             t:'f', e:'Stück', g:180, kcal:52.0, p:0.3, kh:14.0, z:10.0, f:0.2, v:[4.6,3.0,2.2,3.0,107.0,2.4]},
+  {n:'Aprikose',          t:'f', e:'Stück', g:40, kcal:48.0, p:1.4, kh:11.0, z:9.2, f:0.4, v:[10.0,96.0,3.3,9.0,259.0,2.0]},
+  {n:'Avocado',           t:'f', e:'Stück', g:150, kcal:160.0, p:2.0, kh:8.5, z:0.7, f:15.0, v:[10.0,7.0,21.0,81.0,485.0,6.7]},
+  {n:'Banane',            t:'f', e:'Stück', g:120, kcal:89.0, p:1.1, kh:23.0, z:12.0, f:0.3, v:[8.7,3.0,0.5,20.0,358.0,2.6]},
+  {n:'Birne',             t:'f', e:'Stück', g:180, kcal:57.0, p:0.4, kh:15.0, z:10.0, f:0.1, v:[4.3,1.0,4.4,7.0,116.0,3.1]},
+  {n:'Brombeeren',        t:'f', e:'Portion', g:125, kcal:43.0, p:1.4, kh:10.0, z:4.9, f:0.5, v:[21.0,11.0,19.8,25.0,162.0,5.3]},
+  {n:'Cantaloupe-Melone', t:'f', e:'Portion', g:200, kcal:34.0, p:0.8, kh:8.2, z:7.9, f:0.2, v:[37.0,169.0,2.5,21.0,267.0,0.9]},
+  {n:'Clementine',        t:'f', e:'Stück', g:75, kcal:47, p:0.9, kh:12, z:9, f:0.2, v:[49,34,0,24,177,1.7]},
+  {n:'Cranberries',       t:'f', e:'Portion', g:100, kcal:46, p:0.4, kh:12, z:4, f:0.1, v:[13,3,5,1,85,3.6]},
+  {n:'Drachenfrucht',     t:'f', e:'Stück', g:200, kcal:60, p:1.2, kh:13, z:8, f:0.4, v:[3,0,0,6,116,3.0]},
+  {n:'Erdbeeren',         t:'f', e:'Portion', g:150, kcal:32.0, p:0.7, kh:7.7, z:4.9, f:0.3, v:[59.0,1.0,2.2,24.0,153.0,2.0]},
+  {n:'Feige',             t:'f', e:'Stück', g:50, kcal:74.0, p:0.8, kh:19.0, z:16.0, f:0.3, v:[2.0,7.0,4.7,6.0,232.0,2.9]},
+  {n:'Granatapfel',       t:'f', e:'Portion', g:150, kcal:83.0, p:1.7, kh:19.0, z:14.0, f:1.2, v:[10.0,0.0,16.0,38.0,236.0,4.0]},
+  {n:'Grapefruit',        t:'f', e:'Hälfte', g:125, kcal:42.0, p:0.8, kh:11.0, z:6.9, f:0.1, v:[31.0,58.0,0.0,13.0,135.0,1.6]},
+  {n:'Guave',             t:'f', e:'Stück', g:100, kcal:68, p:2.6, kh:14, z:9, f:1.0, v:[228,31,2.6,49,417,5.4]},
+  {n:'Heidelbeeren',      t:'f', e:'Portion', g:125, kcal:57.0, p:0.7, kh:14.0, z:10.0, f:0.3, v:[9.7,3.0,19.0,6.0,77.0,2.4]},
+  {n:'Himbeeren',         t:'f', e:'Portion', g:125, kcal:52.0, p:1.2, kh:12.0, z:4.4, f:0.7, v:[26.0,2.0,7.8,21.0,151.0,6.5]},
+  {n:'Honigmelone',       t:'f', e:'Portion', g:200, kcal:36.0, p:0.5, kh:9.0, z:8.1, f:0.1, v:[18.0,2.0,2.9,19.0,228.0,0.8]},
+  {n:'Johannisbeeren',    t:'f', e:'Portion', g:100, kcal:56.0, p:1.4, kh:14.0, z:7.4, f:0.2, v:[41.0,2.0,11.0,8.0,275.0,4.3]},
+  {n:'Kaki',              t:'f', e:'Stück', g:150, kcal:70.0, p:0.6, kh:18.0, z:13.0, f:0.2, v:[7.5,81.0,2.6,8.0,161.0,3.6]},
+  {n:'Kirschen',          t:'f', e:'Portion', g:125, kcal:63.0, p:1.1, kh:16.0, z:13.0, f:0.2, v:[7.0,3.0,2.1,4.0,222.0,2.1]},
+  {n:'Kiwi',              t:'f', e:'Stück', g:75, kcal:61.0, p:1.1, kh:15.0, z:9.0, f:0.5, v:[93.0,4.0,40.0,25.0,312.0,3.0]},
+  {n:'Kokosnuss',         t:'f', e:'Portion', g:50, kcal:354, p:3.3, kh:15, z:6.2, f:33, v:[3.3,0,0.2,26,356,9.0]},
+  {n:'Limette',           t:'f', e:'Stück', g:60, kcal:30.0, p:0.7, kh:11.0, z:1.7, f:0.2, v:[29.0,2.0,0.6,8.0,102.0,2.8]},
+  {n:'Litschi',           t:'f', e:'Portion', g:100, kcal:66.0, p:0.8, kh:17.0, z:15.0, f:0.4, v:[72.0,0.0,0.4,14.0,171.0,1.3]},
+  {n:'Mandarine',         t:'f', e:'Stück', g:90, kcal:53.0, p:0.8, kh:13.0, z:11.0, f:0.3, v:[27.0,34.0,0.0,16.0,166.0,1.8]},
+  {n:'Mango',             t:'f', e:'Stück', g:200, kcal:60.0, p:0.8, kh:15.0, z:14.0, f:0.4, v:[36.0,54.0,4.2,43.0,168.0,1.6]},
+  {n:'Maracuja',          t:'f', e:'Stück', g:40, kcal:97, p:2.2, kh:23, z:11, f:0.7, v:[30,64,0.7,14,348,10]},
+  {n:'Mirabellen',        t:'f', e:'Portion', g:100, kcal:60, p:0.8, kh:14, z:12, f:0.2, v:[5,20,6,4,180,1.5]},
+  {n:'Nektarine',         t:'f', e:'Stück', g:140, kcal:44.0, p:1.1, kh:11.0, z:8.5, f:0.3, v:[5.4,17.0,2.2,5.0,201.0,1.7]},
+  {n:'Orange',            t:'f', e:'Stück', g:130, kcal:47.0, p:0.9, kh:12.0, z:9.0, f:0.1, v:[53.0,11.0,0.0,30.0,181.0,2.4]},
+  {n:'Papaya',            t:'f', e:'Portion', g:150, kcal:43.0, p:0.5, kh:11.0, z:7.8, f:0.3, v:[61.0,47.0,2.6,37.0,182.0,1.7]},
+  {n:'Pfirsich',          t:'f', e:'Stück', g:150, kcal:39.0, p:0.9, kh:10.0, z:8.4, f:0.3, v:[6.6,16.0,2.6,4.0,190.0,1.5]},
+  {n:'Physalis',          t:'f', e:'Portion', g:100, kcal:53, p:1.9, kh:11, z:5, f:0.7, v:[11,36,0,8,268,2.0]},
+  {n:'Pomelo',            t:'f', e:'Portion', g:200, kcal:38, p:0.8, kh:9.6, z:8, f:0.1, v:[61,0,0,10,216,1.0]},
+  {n:'Rhabarber',         t:'f', e:'Portion', g:150, kcal:21, p:0.9, kh:4.5, z:1.1, f:0.2, v:[8,5,29,7,288,1.8]},
+  {n:'Stachelbeeren',     t:'f', e:'Portion', g:125, kcal:44, p:0.9, kh:10, z:8, f:0.6, v:[27.7,15,0,6,198,4.3]},
+  {n:'Trauben',           t:'f', e:'Portion', g:150, kcal:69.0, p:0.7, kh:18.0, z:16.0, f:0.2, v:[3.2,3.0,15.0,2.0,191.0,0.9]},
+  {n:'Wassermelone',      t:'f', e:'Portion', g:200, kcal:30.0, p:0.6, kh:7.6, z:6.2, f:0.2, v:[8.1,28.0,0.1,3.0,112.0,0.4]},
+  {n:'Zitrone',           t:'f', e:'Stück', g:60, kcal:29.0, p:1.1, kh:9.0, z:2.5, f:0.3, v:[53.0,1.0,0.0,11.0,138.0,2.8]},
+  {n:'Zwetschge',         t:'f', e:'Stück', g:60, kcal:46.0, p:0.7, kh:11.0, z:9.9, f:0.3, v:[9.5,17.0,6.4,5.0,157.0,1.4]},
+  {n:'Artischocke',       t:'g', e:'Stück', g:120, kcal:47.0, p:3.3, kh:11.0, z:1.0, f:0.2, v:[11.7,1.0,14.8,68.0,370.0,5.4]},
+  {n:'Aubergine',         t:'g', e:'Stück', g:250, kcal:25.0, p:1.0, kh:6.0, z:3.5, f:0.2, v:[2.2,1.0,3.5,22.0,229.0,3.0]},
+  {n:'Blumenkohl',        t:'g', e:'Portion', g:150, kcal:25.0, p:1.9, kh:5.0, z:1.9, f:0.3, v:[48.0,0.0,15.0,57.0,299.0,2.0]},
+  {n:'Broccoli',          t:'g', e:'Portion', g:150, kcal:34.0, p:2.8, kh:7.0, z:1.7, f:0.4, v:[89.0,31.0,102.0,63.0,316.0,2.6]},
+  {n:'Champignons',       t:'g', e:'Portion', g:100, kcal:22.0, p:3.1, kh:3.3, z:2.0, f:0.3, v:[2.1,0.0,0.0,17.0,318.0,1.0]},
+  {n:'Chicorée',          t:'g', e:'Stück', g:100, kcal:17, p:0.9, kh:3.2, z:0.4, f:0.1, v:[2.8,5,0,37,211,3.1]},
+  {n:'Chili',             t:'g', e:'Stück', g:15, kcal:40, p:1.9, kh:9, z:5, f:0.4, v:[144,48,14,23,322,1.5]},
+  {n:'Chinakohl',         t:'g', e:'Portion', g:100, kcal:13.0, p:1.2, kh:2.2, z:1.2, f:0.2, v:[27.0,223.0,43.0,66.0,252.0,1.0]},
+  {n:'Edamame',           t:'g', e:'Portion', g:100, kcal:121, p:12, kh:9, z:2.2, f:5.2, v:[6.1,0,26,311,436,5.2]},
+  {n:'Eisbergsalat',      t:'g', e:'Portion', g:80, kcal:14, p:0.9, kh:3, z:2, f:0.1, v:[2.8,25,24,29,141,1.2]},
+  {n:'Endivie',           t:'g', e:'Portion', g:80, kcal:17, p:1.3, kh:3.4, z:0.3, f:0.2, v:[6.5,108,231,142,314,3.1]},
+  {n:'Erbsen',            t:'g', e:'Portion', g:100, kcal:81.0, p:5.4, kh:14.0, z:5.7, f:0.4, v:[40.0,38.0,25.0,65.0,244.0,5.1]},
+  {n:'Fenchel',           t:'g', e:'Portion', g:150, kcal:31.0, p:1.2, kh:7.3, z:3.9, f:0.2, v:[12.0,3.0,4.0,27.0,414.0,3.1]},
+  {n:'Frühlingszwiebel',  t:'g', e:'Portion', g:50, kcal:32, p:1.8, kh:7.3, z:2.3, f:0.2, v:[18.8,50,207,64,276,2.6]},
+  {n:'Grüne Bohnen',      t:'g', e:'Portion', g:150, kcal:31.0, p:1.8, kh:7.0, z:3.3, f:0.2, v:[12.0,35.0,43.0,33.0,211.0,3.4]},
+  {n:'Grünkohl',          t:'g', e:'Portion', g:100, kcal:49.0, p:4.3, kh:9.0, z:2.3, f:0.9, v:[120.0,500.0,705.0,141.0,491.0,3.6]},
+  {n:'Gurke',             t:'g', e:'Portion', g:100, kcal:15.0, p:0.7, kh:3.6, z:1.7, f:0.1, v:[2.8,5.0,16.0,7.0,147.0,0.5]},
+  {n:'Kartoffel',         t:'g', e:'Stück', g:150, kcal:77.0, p:2.0, kh:17.0, z:0.8, f:0.1, v:[19.7,0.0,2.0,15.0,425.0,2.2]},
+  {n:'Kefen',             t:'g', e:'Portion', g:100, kcal:42.0, p:2.8, kh:7.6, z:4.0, f:0.2, v:[60.0,54.0,25.0,42.0,200.0,2.6]},
+  {n:'Kichererbsen',      t:'g', e:'Portion', g:150, kcal:164, p:8.9, kh:27, z:4.8, f:2.6, v:[1.3,1,4,172,291,7.6]},
+  {n:'Kidneybohnen',      t:'g', e:'Portion', g:150, kcal:127, p:8.7, kh:23, z:0.3, f:0.5, v:[1.2,0,8.4,130,405,6.4]},
+  {n:'Knoblauch',         t:'g', e:'Zehe', g:3, kcal:149.0, p:6.4, kh:33.0, z:1.0, f:0.5, v:[31.0,0.0,1.7,3.0,401.0,2.1]},
+  {n:'Kohlrabi',          t:'g', e:'Stück', g:200, kcal:27.0, p:1.7, kh:6.2, z:2.6, f:0.1, v:[62.0,2.0,0.1,16.0,350.0,3.6]},
+  {n:'Kopfsalat',         t:'g', e:'Portion', g:80, kcal:15.0, p:1.4, kh:2.9, z:0.8, f:0.2, v:[9.2,370.0,126.0,38.0,194.0,1.3]},
+  {n:'Kräuterseitling',   t:'g', e:'Portion', g:100, kcal:31, p:3.3, kh:6, z:1.1, f:0.4, v:[0,0,0,10,380,2.5]},
+  {n:'Kresse',            t:'g', e:'Portion', g:20, kcal:32, p:2.6, kh:5.5, z:4.4, f:0.7, v:[69,346,542,80,606,1.1]},
+  {n:'Kürbis',            t:'g', e:'Portion', g:200, kcal:45.0, p:1.0, kh:12.0, z:2.2, f:0.1, v:[21.0,532.0,1.1,27.0,352.0,2.0]},
+  {n:'Lauch',             t:'g', e:'Portion', g:100, kcal:61.0, p:1.5, kh:14.0, z:3.9, f:0.3, v:[12.0,83.0,47.0,64.0,180.0,1.8]},
+  {n:'Linsen',            t:'g', e:'Portion', g:150, kcal:116, p:9, kh:20, z:1.8, f:0.4, v:[1.5,0,1.7,181,369,7.9]},
+  {n:'Mais',              t:'g', e:'Portion', g:100, kcal:86.0, p:3.2, kh:19.0, z:3.2, f:1.2, v:[6.8,9.0,0.3,42.0,270.0,2.0]},
+  {n:'Mangold',           t:'g', e:'Portion', g:100, kcal:19.0, p:1.8, kh:3.7, z:1.1, f:0.2, v:[30.0,306.0,830.0,14.0,379.0,1.6]},
+  {n:'Nüsslisalat',       t:'g', e:'Portion', g:50, kcal:21.0, p:2.0, kh:3.6, z:0.4, f:0.4, v:[38.0,355.0,60.0,145.0,459.0,1.8]},
+  {n:'Okra',              t:'g', e:'Portion', g:100, kcal:33, p:1.9, kh:7, z:1.5, f:0.2, v:[23,36,31.3,60,299,3.2]},
+  {n:'Oliven grün',       t:'g', e:'Portion', g:30, kcal:145.0, p:1.0, kh:3.8, z:0.5, f:15.0, v:[0.0,20.0,1.4,3.0,42.0,3.3]},
+  {n:'Pak Choi',          t:'g', e:'Portion', g:100, kcal:13, p:1.5, kh:2.2, z:1.2, f:0.2, v:[45,223,46,66,252,1.0]},
+  {n:'Pastinake',         t:'g', e:'Portion', g:150, kcal:75.0, p:1.2, kh:18.0, z:4.8, f:0.3, v:[17.0,0.0,22.5,67.0,375.0,4.9]},
+  {n:'Peperoni grün',     t:'g', e:'Stück', g:150, kcal:20.0, p:0.9, kh:4.6, z:2.4, f:0.2, v:[80.0,18.0,7.4,10.0,175.0,1.7]},
+  {n:'Peperoni rot',      t:'g', e:'Stück', g:150, kcal:31.0, p:1.0, kh:6.0, z:4.2, f:0.3, v:[128.0,157.0,4.9,46.0,211.0,2.1]},
+  {n:'Pfifferlinge',      t:'g', e:'Portion', g:100, kcal:32, p:1.5, kh:6.9, z:1.2, f:0.5, v:[0,0,0,17,506,3.8]},
+  {n:'Radieschen',        t:'g', e:'Portion', g:100, kcal:16.0, p:0.7, kh:3.4, z:1.9, f:0.1, v:[15.0,0.0,1.3,25.0,233.0,1.6]},
+  {n:'Rande',             t:'g', e:'Portion', g:150, kcal:43.0, p:1.6, kh:10.0, z:6.8, f:0.2, v:[4.9,2.0,0.2,109.0,325.0,2.8]},
+  {n:'Romanesco',         t:'g', e:'Portion', g:150, kcal:25, p:1.9, kh:5, z:1.9, f:0.3, v:[48,0,15,57,299,2.0]},
+  {n:'Rosenkohl',         t:'g', e:'Portion', g:150, kcal:43.0, p:3.4, kh:9.0, z:2.2, f:0.3, v:[85.0,38.0,177.0,61.0,389.0,3.8]},
+  {n:'Rotkohl',           t:'g', e:'Portion', g:150, kcal:31.0, p:1.4, kh:7.4, z:3.8, f:0.2, v:[57.0,56.0,38.0,18.0,243.0,2.1]},
+  {n:'Rucola',            t:'g', e:'Portion', g:40, kcal:25.0, p:2.6, kh:3.7, z:2.1, f:0.7, v:[15.0,119.0,109.0,97.0,369.0,1.6]},
+  {n:'Rüebli',            t:'g', e:'Stück', g:80, kcal:41.0, p:0.9, kh:10.0, z:4.7, f:0.2, v:[5.9,835.0,13.0,19.0,320.0,2.8]},
+  {n:'Sauerkraut',        t:'g', e:'Portion', g:100, kcal:19.0, p:0.9, kh:4.3, z:1.8, f:0.1, v:[15.0,1.0,13.0,24.0,170.0,2.9]},
+  {n:'Schalotte',         t:'g', e:'Stück', g:30, kcal:72, p:2.5, kh:17, z:7.9, f:0.1, v:[8,0,0.8,34,334,3.2]},
+  {n:'Schwarzwurzeln',    t:'g', e:'Portion', g:150, kcal:82, p:3.3, kh:18, z:3, f:0.4, v:[4,0,0,26,380,3.3]},
+  {n:'Sellerieknolle',    t:'g', e:'Portion', g:150, kcal:42.0, p:1.5, kh:9.2, z:1.6, f:0.3, v:[8.0,0.0,41.0,8.0,300.0,1.8]},
+  {n:'Shiitake',          t:'g', e:'Portion', g:100, kcal:34, p:2.2, kh:6.8, z:2.4, f:0.5, v:[3.5,0,0,13,304,2.5]},
+  {n:'Spargel',           t:'g', e:'Portion', g:200, kcal:20.0, p:2.2, kh:3.9, z:1.9, f:0.1, v:[5.6,38.0,42.0,52.0,202.0,2.1]},
+  {n:'Spinat',            t:'g', e:'Portion', g:100, kcal:23.0, p:2.9, kh:3.6, z:0.4, f:0.4, v:[28.0,469.0,483.0,194.0,558.0,2.2]},
+  {n:'Stangensellerie',   t:'g', e:'Portion', g:100, kcal:16.0, p:0.7, kh:3.0, z:1.3, f:0.2, v:[3.1,22.0,29.0,36.0,260.0,1.6]},
+  {n:'Steckrübe',         t:'g', e:'Portion', g:150, kcal:37, p:1.1, kh:8.6, z:4.5, f:0.2, v:[25,0,0.3,21,337,2.3]},
+  {n:'Steinpilze',        t:'g', e:'Portion', g:100, kcal:27, p:3.1, kh:5, z:1.5, f:0.4, v:[5,0,0,20,390,2.0]},
+  {n:'Süsskartoffel',     t:'g', e:'Stück', g:150, kcal:86.0, p:1.6, kh:20.0, z:4.2, f:0.1, v:[2.4,709.0,1.8,11.0,337.0,3.0]},
+  {n:'Tomate',            t:'g', e:'Stück', g:120, kcal:18.0, p:0.9, kh:3.9, z:2.6, f:0.2, v:[14.0,42.0,7.9,15.0,237.0,1.2]},
+  {n:'Topinambur',        t:'g', e:'Portion', g:150, kcal:73, p:2, kh:17, z:9.6, f:0.1, v:[4,1,0.1,13,429,1.6]},
+  {n:'Weisse Bohnen',     t:'g', e:'Portion', g:150, kcal:139, p:9.7, kh:25, z:0.3, f:0.4, v:[0,0,3.9,81,561,6.3]},
+  {n:'Weisskohl',         t:'g', e:'Portion', g:150, kcal:25.0, p:1.3, kh:6.0, z:3.2, f:0.1, v:[37.0,5.0,76.0,43.0,170.0,2.5]},
+  {n:'Wirsing',           t:'g', e:'Portion', g:150, kcal:27, p:2, kh:6, z:2.3, f:0.1, v:[31,50,68.8,80,230,3.1]},
+  {n:'Zucchini',          t:'g', e:'Stück', g:200, kcal:17.0, p:1.2, kh:3.1, z:2.5, f:0.3, v:[18.0,10.0,4.3,24.0,261.0,1.0]},
+  {n:'Zuckerhut',         t:'g', e:'Portion', g:100, kcal:17, p:1.2, kh:3.2, z:0.5, f:0.2, v:[10,5,30,40,240,2.5]},
+  {n:'Zwiebel',           t:'g', e:'Stück', g:110, kcal:40.0, p:1.1, kh:9.3, z:4.2, f:0.1, v:[7.4,0.0,0.4,19.0,146.0,1.7]}
 ];
 
 // Tagesreferenzwerte: Vitamin C, A, K, Folat, Kalium, Ballaststoffe
@@ -1192,6 +1310,7 @@ const VIT_REF   = [80, 800, 75, 200, 2000, 30];
 const VIT_FARBE = ['var(--sugar)','var(--carb)','var(--protein)','var(--fat)','var(--kcal)','var(--carb)'];
 
 let anzahlen = {};   // gewählte Stückzahl je Eintrag
+let grammen  = {};   // frei getippte Gramm je Eintrag
 
 function tagesVitamine(datum){
   const summe = [0,0,0,0,0,0];
@@ -1228,59 +1347,87 @@ function frischZeichnen(){
 
 function frischListe(){
   const q = (document.getElementById('f-suche').value || '').toLowerCase().trim();
+  const modus = segWert('f-modus');
   const treffer = FRISCH.map((x,i)=>({x,i}))
     .filter(o => !q || o.x.n.toLowerCase().indexOf(q) > -1);
 
   document.getElementById('f-liste').innerHTML = treffer.length
     ? treffer.map(o => {
-        const x = o.x, n = anzahlen[o.i] || 1;
-        const kcal = Math.round(x.kcal * x.g/100 * n);
+        const x = o.x;
+        const menge = modus === 'gramm'
+          ? (grammen[o.i] != null ? grammen[o.i] : x.g)
+          : x.g * (anzahlen[o.i] || 1);
+        const kcal = Math.round(x.kcal * menge/100);
+
+        const bedienung = modus === 'gramm'
+          ? '<input type="number" inputmode="decimal" min="1" max="3000" class="fz-gramm" '
+            + 'data-gramm="'+o.i+'" value="'+menge+'">'
+          : '<div class="step"><button data-minus="'+o.i+'">−</button>'
+            + '<b>'+(anzahlen[o.i] || 1)+'</b><button data-plus="'+o.i+'">+</button></div>';
+
         return '<div class="fz">'
           + '<div class="fz-name">'+esc(x.n)+'</div>'
           + '<div class="umeta">1 '+x.e+' ≈ '+x.g+' g · '+Math.round(x.kcal*x.g/100)+' kcal · '
           +   'Fett '+(Math.round(x.f*x.g/100*10)/10)+' g · Vit C '+(Math.round(x.v[0]*x.g/100))+' mg</div>'
-          + '<div class="fz-unten">'
-          +   '<div class="step"><button data-minus="'+o.i+'">−</button>'
-          +     '<b>'+n+'</b><button data-plus="'+o.i+'">+</button></div>'
+          + '<div class="fz-unten">' + bedienung
           +   '<button class="fz-add" data-add="'+o.i+'">'+kcal+' kcal eintragen</button>'
           + '</div></div>';
       }).join('')
-    : '<div class="empty">Nichts gefunden. Andere Sachen trägst du unter <b>Erfassen</b> ein.</div>';
+    : '<div class="empty">Nichts gefunden. Anderes trägst du unter <b>Erfassen</b> ein.</div>';
 
   document.querySelectorAll('#f-liste [data-minus]').forEach(b => b.addEventListener('click', ()=>{
-    const i = b.dataset.minus;
-    anzahlen[i] = Math.max(1, (anzahlen[i]||1) - 1);
+    anzahlen[b.dataset.minus] = Math.max(1, (anzahlen[b.dataset.minus]||1) - 1);
     frischListe();
   }));
   document.querySelectorAll('#f-liste [data-plus]').forEach(b => b.addEventListener('click', ()=>{
-    const i = b.dataset.plus;
-    anzahlen[i] = Math.min(20, (anzahlen[i]||1) + 1);
+    anzahlen[b.dataset.plus] = Math.min(20, (anzahlen[b.dataset.plus]||1) + 1);
     frischListe();
   }));
-  document.querySelectorAll('#f-liste [data-add]').forEach(b => b.addEventListener('click', ()=>{
-    frischEintragen(+b.dataset.add);
-  }));
+
+  // Gramm tippen: nur die Knopfbeschriftung mitziehen, damit der Fokus bleibt
+  document.querySelectorAll('#f-liste [data-gramm]').forEach(feld => {
+    feld.addEventListener('input', ()=>{
+      const i = feld.dataset.gramm;
+      const g = Math.max(0, +feld.value || 0);
+      grammen[i] = g;
+      const knopf = feld.parentElement.querySelector('.fz-add');
+      knopf.textContent = Math.round(FRISCH[i].kcal * g/100) + ' kcal eintragen';
+    });
+  });
+
+  document.querySelectorAll('#f-liste [data-add]').forEach(b =>
+    b.addEventListener('click', ()=> frischEintragen(+b.dataset.add)));
 }
 
 function frischEintragen(i){
   const x = FRISCH[i];
-  const n = anzahlen[i] || 1;
-  const menge = x.g * n;
+  const modus = segWert('f-modus');
+  const menge = modus === 'gramm'
+    ? (grammen[i] != null ? grammen[i] : x.g)
+    : x.g * (anzahlen[i] || 1);
+
+  if(!(menge > 0)){ toast('Menge eingeben'); return; }
+
   const f = menge/100;
+  const anzahl = anzahlen[i] || 1;
+  const name = modus === 'gramm'
+    ? menge + ' g ' + x.n
+    : (anzahl > 1 ? anzahl + '\u00d7 ' : '') + x.n;
 
   db.eintraege.push({
     id: Date.now()+'-'+Math.random().toString(36).slice(2,7),
     datum: heute(), zeit: new Date().toISOString(),
-    name: (n > 1 ? n + '× ' : '') + x.n,
-    marke: 'Früchte & Gemüse',
+    name: name,
+    marke: 'Fr\u00fcchte & Gem\u00fcse',
     menge: menge,
     pro100: {kcal:x.kcal, protein:x.p, kh:x.kh, zucker:x.z, fett:x.f},
     kcal: x.kcal*f, protein: x.p*f, kh: x.kh*f, zucker: x.z*f, fett: x.f*f,
     vit: x.v.map(w => w*f),
-    portionen: n
+    portionen: Math.round(menge/x.g*10)/10
   });
 
   anzahlen[i] = 1;
+  delete grammen[i];
   sichern();
   heuteZeichnen();
   frischZeichnen();
@@ -1288,6 +1435,117 @@ function frischEintragen(i){
 }
 
 document.getElementById('f-suche').addEventListener('input', frischListe);
+
+/* =========================================================
+   6c. Gruppe
+   ========================================================= */
+let sendeTimer = null;
+
+function grKonfig(){
+  const g = db.gruppe || {};
+  return (g.url && g.code && g.name) ? g : null;
+}
+
+/* Was von deinem Tag hochgeht: Summen, Training und die Mahlzeiten — sonst nichts */
+function meinTag(){
+  const z = db.profil.ziele;
+  const s = tagesSumme(heute());
+  const {portionen} = tagesVitamine(heute());
+  const p = PLAN[new Date().getDay()];
+  const erledigt = (db.training || {})[heute()] || [];
+
+  return {
+    kcal: rund(s.kcal), kcalZiel: z.kcal,
+    protein: rund(s.protein), proteinZiel: z.protein,
+    zucker: rund(s.zucker), zuckerZiel: z.zucker,
+    portionen: Math.round(portionen*10)/10,
+    training: erledigt.length, trainingSoll: p.uebungen.length,
+    trainingTitel: p.titel,
+    essen: db.eintraege.filter(e => e.datum === heute())
+             .map(e => ({n: e.name, k: rund(e.kcal)})).slice(-25),
+    stand: new Date().toISOString()
+  };
+}
+
+function gruppeSenden(){
+  const g = grKonfig();
+  if(!g) return;
+  clearTimeout(sendeTimer);
+  sendeTimer = setTimeout(async ()=>{
+    try{
+      await fetch(g.url, {
+        method:'POST', headers:{'content-type':'application/json'},
+        body: JSON.stringify({code:g.code, name:g.name, tag:heute(), daten: meinTag()})
+      });
+    }catch(e){ /* offline ist kein Drama, beim nächsten Mal wieder */ }
+  }, 1200);
+}
+
+async function gruppeZeichnen(){
+  const st = document.getElementById('gr-status');
+  const liste = document.getElementById('gr-liste');
+  const g = grKonfig();
+
+  if(!g){
+    st.innerHTML = 'Noch keine Gruppe eingerichtet. Server-Adresse, Code und Namen trägst du unter <b>Profil</b> ein.';
+    liste.innerHTML = '';
+    return;
+  }
+
+  st.textContent = 'Lade …';
+  gruppeSenden();
+
+  try{
+    const r = await fetch(g.url + '?code=' + encodeURIComponent(g.code) + '&tag=' + heute());
+    const leute = await r.json();
+    if(!Array.isArray(leute) || !leute.length){
+      st.textContent = 'Noch niemand aus der Gruppe hat heute etwas erfasst.';
+      liste.innerHTML = '';
+      return;
+    }
+
+    leute.sort((a,b)=> a.name.localeCompare(b.name));
+    st.textContent = leute.length + ' aus der Gruppe · ' +
+      new Date().toLocaleDateString('de-CH',{weekday:'long', day:'numeric', month:'long'});
+
+    liste.innerHTML = leute.map(person => {
+      const d = person.daten || {};
+      const essen = (d.essen || []);
+      return '<div class="gr-karte'+(person.name === g.name ? ' ich' : '')+'">'
+        + '<div class="gr-kopf"><div class="gr-name">'+esc(person.name)
+        +   (person.name === g.name ? ' <span style="font-size:11px;color:var(--muted)">(du)</span>' : '')
+        + '</div><div class="umeta">'+(d.stand ? new Date(d.stand).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}) : '')+'</div></div>'
+        + '<div class="gr-zahlen">'
+        +   '<div><b>'+(d.kcal||0)+'</b><span>kcal</span></div>'
+        +   '<div><b>'+(d.protein||0)+'</b><span>Protein</span></div>'
+        +   '<div><b>'+(d.portionen||0)+'</b><span>Portionen</span></div>'
+        +   '<div><b>'+(d.training||0)+'/'+(d.trainingSoll||0)+'</b><span>Training</span></div>'
+        + '</div>'
+        + '<div class="gr-essen">'
+        +   (essen.length
+              ? essen.map(e => '<b>'+esc(e.n)+'</b> '+e.k+' kcal').join(' · ')
+              : 'Heute noch nichts eingetragen.')
+        + '</div></div>';
+    }).join('');
+
+  }catch(err){
+    st.textContent = 'Server nicht erreichbar. Adresse im Profil prüfen.';
+    liste.innerHTML = '';
+  }
+}
+
+document.getElementById('gr-neu').addEventListener('click', gruppeZeichnen);
+
+document.getElementById('gr-save').addEventListener('click', ()=>{
+  const url  = document.getElementById('gr-url').value.trim().replace(/\/+$/, '');
+  const code = document.getElementById('gr-code').value.trim();
+  const name = document.getElementById('gr-name').value.trim();
+  if(url && code.length < 4){ toast('Code braucht mindestens 4 Zeichen'); return; }
+  db.gruppe = {url, code, name};
+  sichern();
+  toast(url && code && name ? 'Gruppe gespeichert' : 'Gruppe entfernt');
+  if(url && code && name) gruppeSenden();
+});
 
 /* =========================================================
    7. Woche
@@ -1915,6 +2173,10 @@ function detailBinden(){
    ========================================================= */
 function profilZeichnen(){
   const p = db.profil, z = p.ziele;
+  const gr = db.gruppe || {};
+  document.getElementById('gr-url').value  = gr.url  || '';
+  document.getElementById('gr-code').value = gr.code || '';
+  document.getElementById('gr-name').value = gr.name || '';
   document.getElementById('profil-werte').innerHTML =
       zeile('Ziel', z.text)
     + zeile('Grundumsatz', z.bmr+' kcal')
